@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "tw-animate-css";
+
+/* Variables de tema para compatibilidad Tailwind v3 */
+
+:root {
+  --primary: var(--color-orange-500);
+  --primary-foreground: var(--color-orange-50);
+  --sidebar-primary: var(--color-orange-600);
+  --sidebar-primary-foreground: var(--color-orange-50);
+  --chart-1: var(--color-orange-300);
+  --chart-2: var(--color-orange-500);
+  --chart-3: var(--color-orange-600);
+  --chart-4: var(--color-orange-700);
+  --chart-5: var(--color-orange-800);
+  --radius: 0.5rem;
+  --background: oklch(0.12 0.01 285);
+  --foreground: oklch(0.95 0.01 285);
+  --card: oklch(0.15 0.01 285);
+  --card-foreground: oklch(0.95 0.01 285);
+  --popover: oklch(0.15 0.01 285);
+  --popover-foreground: oklch(0.95 0.01 285);
+  --secondary: oklch(0.22 0.01 285);
+  --secondary-foreground: oklch(0.85 0.01 285);
+  --muted: oklch(0.18 0.01 285);
+  --muted-foreground: oklch(0.65 0.01 285);
+  --accent: oklch(0.25 0.02 285);
+  --accent-foreground: oklch(0.98 0.01 285);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.22 0.01 285);
+  --input: oklch(0.22 0.01 285);
+  --ring: oklch(0.65 0.2 35);
+  --sidebar: oklch(0.14 0.01 285);
+  --sidebar-foreground: oklch(0.95 0.01 285);
+  --sidebar-accent: oklch(0.22 0.01 285);
+  --sidebar-accent-foreground: oklch(0.98 0.01 285);
+  --sidebar-border: oklch(0.22 0.01 285);
+  --sidebar-ring: oklch(0.65 0.2 35);
+}
+
+.dark {
+  --primary: var(--color-orange-500);
+  --primary-foreground: var(--color-orange-50);
+  --sidebar-primary: var(--color-orange-600);
+  --sidebar-primary-foreground: var(--color-orange-50);
+  --background: oklch(0.12 0.01 285);
+  --foreground: oklch(0.95 0.01 285);
+  --card: oklch(0.15 0.01 285);
+  --card-foreground: oklch(0.95 0.01 285);
+  --popover: oklch(0.15 0.01 285);
+  --popover-foreground: oklch(0.95 0.01 285);
+  --secondary: oklch(0.22 0.01 285);
+  --secondary-foreground: oklch(0.85 0.01 285);
+  --muted: oklch(0.18 0.01 285);
+  --muted-foreground: oklch(0.65 0.01 285);
+  --accent: oklch(0.25 0.02 285);
+  --accent-foreground: oklch(0.98 0.01 285);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.22 0.01 285);
+  --input: oklch(0.22 0.01 285);
+  --ring: oklch(0.65 0.2 35);
+  --sidebar: oklch(0.14 0.01 285);
+  --sidebar-foreground: oklch(0.95 0.01 285);
+  --sidebar-accent: oklch(0.22 0.01 285);
+  --sidebar-accent-foreground: oklch(0.98 0.01 285);
+  --sidebar-border: oklch(0.22 0.01 285);
+  --sidebar-ring: oklch(0.65 0.2 35);
+}
+
+@layer utilities {
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /**
+   * Custom container utility that centers content and adds responsive padding.
+   *
+   * This overrides Tailwind's default container behavior to:
+   * - Auto-center content (mx-auto)
+   * - Add responsive horizontal padding
+   * - Set max-width for large screens
+   *
+   * Usage: <div className="container">...</div>
+   *
+   * For custom widths, use max-w-* utilities directly:
+   * <div className="max-w-6xl mx-auto px-4">...</div>
+   */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* 16px - mobile padding */
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; /* 32px - desktop padding */
+      padding-right: 2rem;
+      max-width: 1280px; /* Standard content width */
+    }
+  }
+}
+
+/* --- ANIMACIONES ADICIONALES PARA ANCSTR MUSIC --- */
+@layer utilities {
+  /* Ondas de audio en movimiento */
+  @keyframes wave-flow {
+    0% {
+      transform: scaleY(0.3) translateY(0);
+    }
+    50% {
+      transform: scaleY(1) translateY(-2px);
+    }
+    100% {
+      transform: scaleY(0.3) translateY(0);
+    }
+  }
+
+  .animate-wave-1 { animation: wave-flow 1.2s ease-in-out infinite; }
+  .animate-wave-2 { animation: wave-flow 0.8s ease-in-out infinite 0.2s; }
+  .animate-wave-3 { animation: wave-flow 1.4s ease-in-out infinite 0.4s; }
+  .animate-wave-4 { animation: wave-flow 1.0s ease-in-out infinite 0.1s; }
+  .animate-wave-5 { animation: wave-flow 1.3s ease-in-out infinite 0.3s; }
+
+  /* Cubo 3D giratorio */
+  @keyframes float-cube {
+    0% {
+      transform: translateY(0px) rotateY(0deg) rotateX(10deg);
+    }
+    50% {
+      transform: translateY(-8px) rotateY(180deg) rotateX(-5deg);
+    }
+    100% {
+      transform: translateY(0px) rotateY(360deg) rotateX(10deg);
+    }
+  }
+
+  .animate-cube-3d {
+    animation: float-cube 15s ease-in-out infinite;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  /* Giro del disco vinilo/reproductor */
+  @keyframes spin-vinyl {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-vinyl {
+    animation: spin-vinyl 4s linear infinite;
+  }
+}

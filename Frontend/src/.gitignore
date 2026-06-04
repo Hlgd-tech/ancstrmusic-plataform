@@ -1,0 +1,13 @@
+# Ignorar carpetas pesadas universalmente
+**/node_modules/
+**/venv/
+**/__pycache__/
+
+# Variables de entorno y secretos
+.env
+*.env
+**/*.env
+
+# Archivos compilados
+dist/
+build/
