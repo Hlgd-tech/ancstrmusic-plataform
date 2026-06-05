@@ -1369,7 +1369,9 @@ export default function Home() {
                           <input 
                             type="file" 
                             accept="audio/*" 
-                            onChange={handleAudioUpload} 
+                            onChange={(e) => {
+                            if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "audio");
+                          }} 
                             required={!uploadedAudioHash}
                             className="mt-2 bg-white/5 border-white/5 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
                           />
@@ -1393,7 +1395,9 @@ export default function Home() {
                           <input 
                             type="file" 
                             accept="image/*" 
-                            onChange={handleCoverUpload} 
+                            onChange={(e) => {
+                            if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "cover");
+                          }} 
                             className="mt-2 bg-white/5 border-white/5 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
                           />
                           {uploadedCoverHash && (
@@ -1661,7 +1665,7 @@ export default function Home() {
                 </button>
                 
                 <button 
-                  onClick={handlePlayPrev}
+                  onClick={handlePrev}
                   className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all border border-white/5"
                 >
                   <SkipBack className="w-4 h-4 fill-current" />
@@ -1675,7 +1679,7 @@ export default function Home() {
                 </button>
 
                 <button 
-                  onClick={handlePlayNext}
+                  onClick={handleNext}
                   className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all border border-white/5"
                 >
                   <SkipForward className="w-4 h-4 fill-current" />
@@ -1696,7 +1700,7 @@ export default function Home() {
                   value={[volume]} 
                   max={100} 
                   step={1}
-                  onValueChange={handleVolumeChange}
+                  onValueChange={(value) => setVolume(value[0])}
                   className="cursor-pointer"
                 />
                 <span className="text-[10px] font-mono text-zinc-500 w-6 text-right">{volume}%</span>
@@ -1739,7 +1743,7 @@ export default function Home() {
                 {comments.map((c, i) => (
                   <div key={i} className="bg-black/30 border border-white/5 rounded-xl p-2.5">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[9px] font-mono text-cyan-400 font-bold truncate max-w-[100px]">{c.wallet.slice(0, 4)}...{c.wallet.slice(-4)}</span>
+                      <span className="text-[9px] font-mono text-cyan-400 font-bold truncate max-w-[100px]">{c.author_wallet.slice(0, 4)}...{c.author_wallet.slice(-4)}</span>
                       <span className="text-[8px] text-zinc-500 font-mono">{new Date(c.timestamp).toLocaleDateString()}</span>
                     </div>
                     <p className="text-[10px] text-zinc-300 leading-relaxed">{c.text}</p>
@@ -1752,16 +1756,48 @@ export default function Home() {
                 <Input 
                   type="text" 
                   placeholder="Añadir comentario público..." 
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
                   className="bg-white/5 border-white/5 text-white text-xs h-9 rounded-xl"
                 />
                 <Button 
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim() || !connected}
+                  disabled={isSubmittingComment || !newCommentText.trim() || !connected}
+                  onClick={() => {
+                    if (!publicKey) {
+                      toast.error("Error", {
+                        description: "Por favor conecta tu billetera primero."
+                      });
+                      return;
+                    }
+                    setIsSubmittingComment(true);
+                    try {
+                      const hasLicense = purchasedTracks.some(trackId => {
+                        const track = tracks.find(t => t.track_id === trackId);
+                        return track && track.artist_wallet.toLowerCase() === currentTrack.artist_wallet.toLowerCase();
+                      });
+                      const newComment = {
+                        comment_id: `comment-${Math.random().toString(36).substr(2, 9)}`,
+                        artist_wallet: currentTrack.artist_wallet,
+                        author_wallet: publicKey.toString(),
+                        author_name: authorName.trim() || (publicKey ? `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}` : 'Anon_Collector'),
+                        text: newCommentText,
+                        timestamp: Date.now(),
+                        has_license: hasLicense
+                      };
+                      setComments(prev => [newComment, ...prev]);
+                      setNewCommentText("");
+                      toast.success("Mensaje publicado", {
+                        description: "Tu mensaje ha sido grabado en el muro descentralizado."
+                      });
+                    } catch (error) {
+                      console.error(error);
+                    } finally {
+                      setIsSubmittingComment(false);
+                    }
+                  }}
                   className="bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-9 px-3 rounded-xl border border-white/5"
                 >
-                  Enviar
+                  {isSubmittingComment ? <Loader2 className="w-3 h-3 animate-spin" /> : "Enviar"}
                 </Button>
               </div>
             </div>
