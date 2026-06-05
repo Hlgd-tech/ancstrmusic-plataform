@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { 
-  Play, Pause, SkipForward, SkipBack, Volume2, Music, 
+  Play, Pause, SkipForward, SkipBack, Volume2, Volume, VolumeX, Music, 
   Upload, Disc, ArrowRight, ShieldCheck, 
   Coins, Sparkles, CheckCircle2, RefreshCw, AlertCircle, Loader2,
-  TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User
+  TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User, Image, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -807,7 +807,7 @@ export default function Home() {
   const trendingTracks = [...tracks].sort((a, b) => b.sales_count - a.sales_count);
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-zinc-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400">
+    <div className="min-h-screen bg-cyberpunk-main text-zinc-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400">
       
       {/* Elemento de audio HTML5 oculto */}
       <audio 
@@ -820,7 +820,7 @@ export default function Home() {
       />
 
       {/* --- CABECERA DE LA APP --- */}
-      <header className="border-b border-zinc-900 bg-black/60 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+      <header className="border-b border-white/5 bg-[#06060a]/40 backdrop-blur-xl sticky top-0 z-50 px-4 py-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/10">
@@ -909,53 +909,192 @@ export default function Home() {
       </section>
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* COLUMNA IZQUIERDA: Explorador y Acciones (8 Columnas) */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
+        {/* ========================================================================= */}
+        {/* COLUMNA 1: MENÚ LATERAL DE CONTROL FLOTANTE (3 Columnas) - OPCIÓN 2 */}
+        {/* ========================================================================= */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
           
+          {/* Tarjeta de Perfil Holográfica */}
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-full blur-xl pointer-events-none" />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-orange-500 p-0.5 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                  <div className="w-full h-full rounded-full bg-[#0a0a0f] flex items-center justify-center overflow-hidden">
+                    <User className="w-6 h-6 text-cyan-400" />
+                  </div>
+                </div>
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0a0a0f] rounded-full animate-pulse" />
+              </div>
+              <div>
+                <span className="text-[9px] font-mono text-cyan-400 tracking-widest uppercase">ONLINE / WEB3</span>
+                <h3 className="text-sm font-bold text-white tracking-tight truncate max-w-[140px]">
+                  {connected ? `${publicKey?.toBase58().slice(0, 4)}...${publicKey?.toBase58().slice(-4)}` : "Anon_Collector"}
+                </h3>
+              </div>
+            </div>
+            
+            <div className="solana-wallet-btn-container w-full">
+              <WalletMultiButton className="!bg-gradient-to-r !from-cyan-500 !to-blue-600 hover:!from-cyan-600 hover:!to-blue-700 !w-full !h-9 !rounded-xl !text-xs !font-bold !tracking-wide !transition-all !font-sans !justify-center !shadow-lg !shadow-cyan-500/10" />
+            </div>
+          </div>
+
+          {/* Tarjeta de Saldos Consolidados (Glassmorphism) */}
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-500/10 to-transparent rounded-full blur-xl pointer-events-none" />
+            <h4 className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+              <Coins className="w-3.5 h-3.5 text-orange-400" />
+              Balances Consolidados
+            </h4>
+            
+            <div className="space-y-3.5">
+              {/* SOL */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Solana (SOL)
+                  </span>
+                  <span className="text-white font-semibold">{connected && solBalance !== null ? `${solBalance}` : "0.00"} SOL</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full" style={{ width: connected ? '45%' : '0%' }} />
+                </div>
+              </div>
+
+              {/* USDC */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> USD Coin (USDC)
+                  </span>
+                  <span className="text-white font-semibold">{usdcBalance.toFixed(2)} USDC</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: '65%' }} />
+                </div>
+              </div>
+
+              {/* USDT */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500" /> Tether (USDT)
+                  </span>
+                  <span className="text-white font-semibold">{usdtBalance.toFixed(2)} USDT</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }} />
+                </div>
+              </div>
+
+              {/* ETH */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> Ethereum (ETH)
+                  </span>
+                  <span className="text-white font-semibold">{ethBalance.toFixed(4)} ETH</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-purple-400 rounded-full" style={{ width: '30%' }} />
+                </div>
+              </div>
+
+              {/* BTC */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> Bitcoin (BTC)
+                  </span>
+                  <span className="text-white font-semibold">{btcBalance.toFixed(5)} BTC</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-500 rounded-full" style={{ width: '20%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Menú de Control de Pestañas Vertical */}
+          <div className="glass-card rounded-2xl p-2 flex flex-col gap-1">
+            <button
+              onClick={() => {
+                const el = document.querySelector('[value="catalog"]') as HTMLButtonElement;
+                if (el) el.click();
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all duration-200 text-left"
+            >
+              <Disc className="w-4 h-4 text-cyan-400" />
+              Catálogo de Música
+            </button>
+            <button
+              onClick={() => {
+                const el = document.querySelector('[value="trending"]') as HTMLButtonElement;
+                if (el) el.click();
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all duration-200 text-left"
+            >
+              <TrendingUp className="w-4 h-4 text-orange-400" />
+              Tendencias Globales
+            </button>
+            <button
+              onClick={() => {
+                const el = document.querySelector('[value="history"]') as HTMLButtonElement;
+                if (el) el.click();
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all duration-200 text-left"
+            >
+              <History className="w-4 h-4 text-cyan-400" />
+              Mi Historial Web3
+            </button>
+            <button
+              onClick={() => {
+                const el = document.querySelector('[value="upload"]') as HTMLButtonElement;
+                if (el) el.click();
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all duration-200 text-left"
+            >
+              <ShieldCheck className="w-4 h-4 text-orange-400" />
+              Publicar Licencia (Artista)
+            </button>
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* COLUMNA 2: CATÁLOGO CENTRAL AMPLIO (5 Columnas) - OPCIÓN 2 */}
+        {/* ========================================================================= */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
           <Tabs defaultValue="catalog" className="w-full">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3 mb-6">
-              <TabsList className="bg-zinc-950 p-1 rounded-lg border border-zinc-900 flex h-auto">
-                <TabsTrigger 
-                  value="catalog" 
-                  className="text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all font-medium"
-                >
-                  Catálogo
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="trending" 
-                  className="text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all font-medium flex items-center gap-1.5"
-                >
-                  <TrendingUp className="w-3.5 h-3.5" /> Tendencias
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="history" 
-                  className="text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all font-medium flex items-center gap-1.5"
-                >
-                  <History className="w-3.5 h-3.5" /> Mi Historial
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="upload" 
-                  className="text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all font-medium"
-                >
-                  Publicar (Artista)
-                </TabsTrigger>
+            {/* TabsList oculto de forma segura para usar los botones del menú lateral izquierdo */}
+            <div className="hidden">
+              <TabsList>
+                <TabsTrigger value="catalog">Catálogo</TabsTrigger>
+                <TabsTrigger value="trending">Tendencias</TabsTrigger>
+                <TabsTrigger value="history">Historial</TabsTrigger>
+                <TabsTrigger value="upload">Publicar</TabsTrigger>
               </TabsList>
             </div>
 
             {/* TAB: CATÁLOGO */}
-            <TabsContent value="catalog" className="mt-0 outline-none">
+            <TabsContent value="catalog" className="mt-0 outline-none space-y-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">DISCOVER NEW MUSIC</span>
+                <h3 className="text-xl font-extrabold text-white tracking-tight">Catálogo Descentralizado</h3>
+              </div>
+
               {/* Cuadro de Búsqueda Global */}
-              <div className="relative mb-4">
+              <div className="relative">
                 <Input
                   type="text"
                   placeholder="Buscar canciones, artistas, géneros, álbumes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-zinc-950/80 border-zinc-900 focus:border-orange-500/50 text-white placeholder-zinc-500 text-xs py-5 pl-10 pr-4 rounded-lg w-full transition-all duration-300"
+                  className="bg-white/5 border-white/5 focus:border-cyan-500/50 text-white placeholder-zinc-500 text-xs py-5.5 pl-10 pr-4 rounded-xl w-full transition-all duration-300 backdrop-blur-md"
                 />
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-400/70">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
                 {searchQuery && (
@@ -969,15 +1108,15 @@ export default function Home() {
               </div>
 
               {/* Filtro Rápido por Género (Horizontal Scrollable) */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 {["Todos", "Ambient", "Synthwave", "House", "Techno", "Lo-Fi / Beats", "Pop", "Hip Hop", "Rock", "Acoustic / Indie"].map((genre) => (
                   <button
                     key={genre}
                     onClick={() => setSelectedGenre(genre)}
-                    className={`text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-full border transition-all duration-200 whitespace-nowrap ${
+                    className={`text-[10px] font-mono uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all duration-200 whitespace-nowrap ${
                       selectedGenre === genre
-                        ? "bg-orange-500 border-orange-500 text-white font-bold shadow-lg shadow-orange-500/10"
-                        : "bg-zinc-950 border-zinc-900 text-zinc-400 hover:text-zinc-200 hover:border-zinc-800"
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 border-cyan-500 text-white font-bold shadow-lg shadow-cyan-500/10"
+                        : "bg-white/5 border-white/5 text-zinc-400 hover:text-zinc-200 hover:border-white/10"
                     }`}
                   >
                     {genre}
@@ -985,7 +1124,8 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Grid de Canciones en Tarjetas de Cristal */}
+              <div className="grid grid-cols-1 gap-4">
                 {tracks
                   .filter(track => {
                     const matchesGenre = selectedGenre === "Todos" || track.genre === selectedGenre;
@@ -997,160 +1137,108 @@ export default function Home() {
                     return matchesGenre && matchesSearch;
                   })
                   .map((track) => {
-                  const isPurchased = purchasedTracks.includes(track.track_id);
-                  const isCurrent = currentTrack.track_id === track.track_id;
-                  
-                  return (
-                    <Card 
-                      key={track.track_id} 
-                      className={`bg-zinc-950/40 border transition-all duration-300 hover:border-zinc-800 group ${
-                        isCurrent ? "border-orange-500/50 bg-zinc-950/80 shadow-lg shadow-orange-500/5" : "border-zinc-900"
-                      }`}
-                    >
-                      <CardContent className="p-4 flex gap-4 items-center relative">
-                        <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                          <img 
-                            src={track.ipfs_cover_hash} 
-                            alt={track.title} 
-                            className="w-full h-full object-cover"
-                          />
-                          <button 
-                            onClick={() => {
-                              setCurrentTrack(track);
-                              setIsPlaying(isCurrent ? !isPlaying : true);
-                            }}
-                            className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            {isCurrent && isPlaying ? (
-                              <Pause className="w-6 h-6 text-orange-500 fill-orange-500" />
-                            ) : (
-                              <Play className="w-6 h-6 text-white fill-white" />
-                            )}
-                          </button>
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-white truncate">{track.title}</h4>
-                            {isPurchased && (
-                              <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded-full font-mono uppercase">Adquirida</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-zinc-400 truncate">{track.artist_name}</p>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <span className="text-[10px] bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded font-mono">{track.genre}</span>
-                            <span className="text-[10px] text-zinc-500 font-mono">{formatTime(track.duration)}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-2">
-                          <div className="text-right">
-                            <p className="text-[11px] font-mono font-bold text-amber-500">{track.price_sol} SOL</p>
-                            <p className="text-[9px] font-mono text-zinc-500">${track.price_usdc} USDC</p>
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <button 
-                              onClick={() => handleLike(track.track_id)}
-                              className={`p-1.5 rounded-md transition-colors ${likedTracks.includes(track.track_id) ? 'text-red-500' : 'text-zinc-500 hover:text-zinc-300'}`}
-                            >
-                              <Heart className={`w-3.5 h-3.5 ${likedTracks.includes(track.track_id) ? 'fill-red-500' : ''}`} />
-                            </button>
-                            
-                            {isPurchased ? (
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  setCurrentTrack(track);
-                                  setIsPlaying(isCurrent ? !isPlaying : true);
-                                }}
-                                className="h-7 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
-                              >
-                                ESCUCHAR
-                              </Button>
-                            ) : (
-                              <div className="flex gap-1">
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => handlePurchase(track, "SOL")}
-                                  className="h-7 text-[9px] bg-orange-500 hover:bg-orange-600 text-white font-bold"
-                                >
-                                  SOL
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => handlePurchase(track, "USDC")}
-                                  className="h-7 text-[9px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
-                                >
-                                  USDC
-                                </Button>
+                    const isPurchased = purchasedTracks.includes(track.track_id);
+                    const isCurrent = currentTrack.track_id === track.track_id;
+                    return (
+                      <div 
+                        key={track.track_id}
+                        className={`glass-card rounded-2xl p-4 flex items-center justify-between group transition-all duration-300 ${isCurrent ? 'border-cyan-500/30 bg-cyan-500/5' : ''}`}
+                      >
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
+                            <img src={track.ipfs_cover_hash || "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_genesis-dA4XYwNQ6oCojnGnoNVWU7.webp"} alt={track.title} className="w-full h-full object-cover" />
+                            {isCurrent && isPlaying && (
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <div className="flex gap-0.5 items-end h-4">
+                                  <div className="w-0.5 bg-cyan-400 animate-[pulse_0.8s_infinite]" style={{ height: '60%' }} />
+                                  <div className="w-0.5 bg-cyan-400 animate-[pulse_0.5s_infinite_0.1s]" style={{ height: '100%' }} />
+                                  <div className="w-0.5 bg-cyan-400 animate-[pulse_0.7s_infinite_0.2s]" style={{ height: '40%' }} />
+                                </div>
                               </div>
                             )}
                           </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className={`text-xs font-bold truncate ${isCurrent ? 'text-cyan-400' : 'text-white'}`}>{track.title}</h4>
+                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{track.artist_name}</p>
+                            <span className="inline-block text-[8px] font-mono text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">{track.genre}</span>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+
+                        <div className="flex items-center gap-3 ml-4">
+                          <button
+                            onClick={() => handlePlayTrack(track)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                              isCurrent && isPlaying 
+                                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' 
+                                : 'bg-white/5 hover:bg-cyan-500 hover:text-white text-zinc-400'
+                            }`}
+                          >
+                            {isCurrent && isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+                          </button>
+                          
+                          <div className="text-right">
+                            <span className="block text-[10px] font-bold text-white">{track.price_sol} SOL</span>
+                            <span className="block text-[8px] text-zinc-500 font-mono">${track.price_usdc.toFixed(2)} USDC</span>
+                          </div>
+
+                          <Button
+                            onClick={() => handlePurchaseTrack(track)}
+                            disabled={isPurchased}
+                            className={`text-[9px] font-mono font-bold uppercase h-7 px-2.5 rounded-lg ${
+                              isPurchased 
+                                ? 'bg-zinc-800 text-zinc-500 border border-zinc-700/50 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/10'
+                            }`}
+                          >
+                            {isPurchased ? "Adquirido" : "Comprar"}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </TabsContent>
 
             {/* TAB: TENDENCIAS */}
-            <TabsContent value="trending" className="mt-0 outline-none">
-              <div className="flex flex-col gap-3">
+            <TabsContent value="trending" className="mt-0 outline-none space-y-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">GLOBAL CHARTS</span>
+                <h3 className="text-xl font-extrabold text-white tracking-tight">Tendencias Globales</h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
                 {trendingTracks.map((track, index) => {
                   const isPurchased = purchasedTracks.includes(track.track_id);
                   const isCurrent = currentTrack.track_id === track.track_id;
-                  
                   return (
                     <div 
                       key={track.track_id}
-                      className={`flex items-center gap-4 bg-zinc-950/30 border border-zinc-900 p-3 rounded-lg hover:border-zinc-800 transition-all ${
-                        isCurrent ? "border-orange-500/30 bg-zinc-950/60" : ""
-                      }`}
+                      className="glass-card rounded-2xl p-4 flex items-center justify-between group relative overflow-hidden"
                     >
-                      <div className="font-mono text-sm font-bold text-zinc-600 w-6 text-center">
-                        {index + 1}
-                      </div>
-                      
-                      <img src={track.ipfs_cover_hash} alt={track.title} className="w-12 h-12 rounded object-cover flex-shrink-0" />
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-white truncate">{track.title}</h4>
-                        <p className="text-xs text-zinc-400 truncate">{track.artist_name}</p>
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-500 to-amber-500" />
+                      <div className="flex items-center gap-4 min-w-0 flex-1 pl-2">
+                        <span className="text-sm font-mono font-bold text-orange-500/70 w-4">{index + 1}</span>
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
+                          <img src={track.ipfs_cover_hash} alt={track.title} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className={`text-xs font-bold truncate ${isCurrent ? 'text-orange-400' : 'text-white'}`}>{track.title}</h4>
+                          <p className="text-[10px] text-zinc-400 truncate mt-0.5">{track.artist_name}</p>
+                          <span className="inline-block text-[8px] font-mono text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">{track.genre}</span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-6">
-                        <div className="text-right hidden md:block">
-                          <p className="text-[10px] text-zinc-500 font-mono">Licencias Adquiridas</p>
-                          <p className="text-xs font-mono font-bold text-orange-400 flex items-center justify-end gap-1">
-                            <Award className="w-3.5 h-3.5" /> {track.sales_count}
-                          </p>
+                      <div className="flex items-center gap-4 ml-4">
+                        <div className="text-right">
+                          <span className="block text-[10px] font-bold text-white">{track.sales_count} ventas</span>
+                          <span className="block text-[8px] text-zinc-500 font-mono">Populares</span>
                         </div>
-
-                        <div className="flex gap-2">
-                          {isPurchased ? (
-                            <Button 
-                              size="sm" 
-                              onClick={() => {
-                                setCurrentTrack(track);
-                                setIsPlaying(isCurrent ? !isPlaying : true);
-                              }}
-                              className="h-8 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800"
-                            >
-                              ESCUCHAR
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              onClick={() => handlePurchase(track, "SOL")}
-                              className="h-8 text-[10px] bg-orange-500 hover:bg-orange-600 text-white font-bold"
-                            >
-                              ADQUIRIR
-                            </Button>
-                          )}
-                        </div>
+                        <button
+                          onClick={() => handlePlayTrack(track)}
+                          className="w-8 h-8 rounded-full bg-white/5 hover:bg-orange-500 hover:text-white text-zinc-400 flex items-center justify-center transition-all"
+                        >
+                          {isCurrent && isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+                        </button>
                       </div>
                     </div>
                   );
@@ -1158,313 +1246,245 @@ export default function Home() {
               </div>
             </TabsContent>
 
-            {/* TAB: HISTORIAL */}
-            <TabsContent value="history" className="mt-0 outline-none">
-              {userHistory.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-zinc-900 rounded-lg">
-                  <History className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-                  <p className="text-xs text-zinc-500 font-mono">No has adquirido licencias digitales aún.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {userHistory.map((record, index) => (
-                    <div 
-                      key={record.track_id + index}
-                      className="flex items-center gap-4 bg-zinc-950/30 border border-zinc-900 p-3 rounded-lg"
-                    >
-                      <img src={record.ipfs_cover_hash} alt={record.title} className="w-12 h-12 rounded object-cover flex-shrink-0" />
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-white truncate">{record.title}</h4>
-                        <p className="text-xs text-zinc-400 truncate">{record.artist_name}</p>
-                        <p className="text-[9px] text-zinc-500 font-mono mt-1">
-                          Adquirido: {new Date(record.timestamp).toLocaleDateString()}
-                        </p>
-                        {record.cnft_address && (
-                          <div className="mt-1 flex flex-col gap-0.5">
-                            <p className="text-[8px] font-mono text-orange-400/80 truncate" title={record.cnft_address}>
-                              cNFT: {record.cnft_address}
-                            </p>
-                            {record.merkle_tree && (
-                              <p className="text-[7px] font-mono text-zinc-600 truncate" title={record.merkle_tree}>
-                                Árbol Merkle: {record.merkle_tree}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
+            {/* TAB: MI HISTORIAL */}
+            <TabsContent value="history" className="mt-0 outline-none space-y-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">TRANSACTION HISTORY</span>
+                <h3 className="text-xl font-extrabold text-white tracking-tight">Mi Historial Web3</h3>
+              </div>
 
-                      <div className="text-right">
-                        <p className="text-[10px] text-zinc-500 font-mono">Precio Pagado</p>
-                        <p className="text-xs font-mono font-bold text-green-500">
-                          {record.amount_paid} {record.currency}
-                        </p>
+              <div className="grid grid-cols-1 gap-4">
+                {userHistory.map((record, idx) => (
+                  <div 
+                    key={idx}
+                    className="glass-card rounded-2xl p-4 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
+                        <img src={record.ipfs_cover_hash} alt={record.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-white truncate">{record.title}</h4>
+                        <p className="text-[10px] text-zinc-400 truncate mt-0.5">{record.artist_name}</p>
+                        <span className="text-[8px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded mt-1 inline-block uppercase">Licencia Adquirida</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div className="text-right ml-4">
+                      <span className="block text-xs font-mono font-bold text-cyan-400">-{record.amount_paid} {record.currency}</span>
+                      <span className="block text-[8px] text-zinc-500 font-mono mt-0.5">
+                        {new Date(record.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </TabsContent>
 
             {/* TAB: PUBLICAR (ARTISTA) */}
-            <TabsContent value="upload" className="mt-0 outline-none">
-              <Card className="bg-[#0c0c0f]/40 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/60 rounded-2xl hover:border-white/10 transition-all duration-500">
-                <CardHeader>
-                  <CardTitle className="text-sm font-bold text-white tracking-wider uppercase flex items-center gap-2">
-                    <Upload className="w-4 h-4 text-orange-500" /> Publicar Nueva Licencia Digital
-                  </CardTitle>
-                  <CardDescription className="text-xs text-zinc-400">
-                    Acuña tu música de forma descentralizada. Los archivos se alojan en IPFS y la venta distribuye automáticamente los fondos.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleUploadTrack} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Título de la Canción *</label>
-                        <Input 
-                          placeholder="Ej. Decentralized Dreams" 
-                          value={newTitle}
-                          onChange={(e) => setNewTitle(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Nombre del Artista *</label>
-                        <Input 
-                          placeholder="Ej. Satoshi Sound" 
-                          value={newArtist}
-                          onChange={(e) => setNewArtist(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
+            <TabsContent value="upload" className="mt-0 outline-none space-y-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">CREATOR PORTAL</span>
+                <h3 className="text-xl font-extrabold text-white tracking-tight">Publicar Licencia Digital</h3>
+              </div>
+
+              <div className="glass-card rounded-2xl p-5">
+                <form onSubmit={handleUploadTrack} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Título de la Canción *</label>
+                      <Input 
+                        type="text" 
+                        placeholder="Ej: Satoshi Groove" 
+                        value={newTitle} 
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/5 focus:border-orange-500/50 text-white text-xs h-9.5 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Nombre del Artista *</label>
+                      <Input 
+                        type="text" 
+                        placeholder="Ej: Anchor Band" 
+                        value={newArtist} 
+                        onChange={(e) => setNewArtist(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/5 focus:border-orange-500/50 text-white text-xs h-9.5 rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Género *</label>
+                      <select 
+                        value={newGenre} 
+                        onChange={(e) => setNewGenre(e.target.value)}
+                        required
+                        className="bg-white/5 border border-white/5 text-white text-xs h-9.5 rounded-xl px-3 w-full focus:outline-none focus:border-orange-500/50"
+                      >
+                        <option value="" disabled className="bg-[#0a0a0f]">Seleccionar género</option>
+                        {GENRE_OPTIONS.map((g) => (
+                          <option key={g} value={g} className="bg-[#0a0a0f]">{g}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Precio en SOL *</label>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        value={newPriceSol} 
+                        onChange={(e) => setNewPriceSol(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/5 focus:border-orange-500/50 text-white text-xs h-9.5 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Precio en USDC *</label>
+                      <Input 
+                        type="number" 
+                        step="0.1" 
+                        value={newPriceUsdc} 
+                        onChange={(e) => setNewPriceUsdc(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/5 focus:border-orange-500/50 text-white text-xs h-9.5 rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  {/* SUBIDA DE AUDIO REAL A IPFS */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={`border border-dashed rounded-xl p-4 text-center bg-white/5 flex flex-col justify-center items-center transition-all ${isUploadingAudio ? 'border-orange-500/50 shadow-lg shadow-orange-500/5' : 'border-white/5'}`}>
+                      {isUploadingAudio ? (
+                        <div className="flex flex-col items-center justify-center py-2">
+                          <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-2" />
+                          <span className="text-[10px] font-mono text-orange-400 uppercase tracking-wider animate-pulse">Subiendo Audio a IPFS...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Music className="w-6 h-6 text-zinc-500 mb-2" />
+                          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">Archivo de Audio *</span>
+                          <input 
+                            type="file" 
+                            accept="audio/*" 
+                            onChange={handleAudioUpload} 
+                            required={!uploadedAudioHash}
+                            className="mt-2 bg-white/5 border-white/5 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
+                          />
+                          {uploadedAudioHash && (
+                            <p className="text-[9px] text-green-500 font-mono mt-2 truncate max-w-full">Listo en IPFS: Audio Subido</p>
+                          )}
+                        </>
+                      )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Género *</label>
-                        <select 
-                          value={newGenre}
-                          onChange={(e) => setNewGenre(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 rounded-lg h-9 px-3 text-xs focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 appearance-none cursor-pointer"
-                        >
-                          <option value="" disabled>Selecciona un género</option>
-                          {SPOTIFY_GENRES.map(g => (
-                            <option key={g} value={g}>{g}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Precio en SOL *</label>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          placeholder="0.1" 
-                          value={newPriceSol}
-                          onChange={(e) => setNewPriceSol(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Precio en USDC *</label>
-                        <Input 
-                          type="number" 
-                          step="0.1" 
-                          placeholder="3.0" 
-                          value={newPriceUsdc}
-                          onChange={(e) => setNewPriceUsdc(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
+                    <div className={`border border-dashed rounded-xl p-4 text-center bg-white/5 flex flex-col justify-center items-center transition-all ${isUploadingCover ? 'border-orange-500/50 shadow-lg shadow-orange-500/5' : 'border-white/5'}`}>
+                      {isUploadingCover ? (
+                        <div className="flex flex-col items-center justify-center py-2">
+                          <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-2" />
+                          <span className="text-[10px] font-mono text-orange-400 uppercase tracking-wider animate-pulse">Subiendo Portada...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Image className="w-6 h-6 text-zinc-500 mb-2" />
+                          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">Imagen de Portada</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleCoverUpload} 
+                            className="mt-2 bg-white/5 border-white/5 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
+                          />
+                          {uploadedCoverHash && (
+                            <p className="text-[9px] text-green-500 font-mono mt-2 truncate max-w-full">Listo en IPFS: Portada Subida</p>
+                          )}
+                        </>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Precios adicionales (USDT, ETH, BTC) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-900 pt-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Precio en USDT *</label>
-                        <Input 
-                          type="number" 
-                          step="0.1" 
-                          placeholder="3.0" 
-                          value={newPriceUsdt}
-                          onChange={(e) => setNewPriceUsdt(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Precio en ETH *</label>
-                        <Input 
-                          type="number" 
-                          step="0.0001" 
-                          placeholder="0.001" 
-                          value={newPriceEth}
-                          onChange={(e) => setNewPriceEth(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Precio en BTC *</label>
-                        <Input 
-                          type="number" 
-                          step="0.00001" 
-                          placeholder="0.00005" 
-                          value={newPriceBtc}
-                          onChange={(e) => setNewPriceBtc(e.target.value)}
-                          className="bg-zinc-950 border-zinc-800 text-zinc-200 h-9 text-xs focus-visible:ring-orange-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* SUBIDA DE AUDIO REAL A IPFS */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={`border border-dashed rounded-lg p-4 text-center bg-zinc-950/40 flex flex-col justify-center items-center transition-all ${isUploadingAudio ? 'border-orange-500/50 shadow-lg shadow-orange-500/5' : 'border-zinc-800'}`}>
-                        {isUploadingAudio ? (
-                          <div className="flex flex-col items-center justify-center py-2">
-                            <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-2" />
-                            <p className="text-[10px] font-mono text-orange-400 animate-pulse">Subiendo audio...</p>
-                            <div className="w-24 bg-zinc-900 h-1 rounded-full mt-2 overflow-hidden">
-                              <div className="bg-gradient-to-r from-orange-600 to-amber-500 h-full w-full animate-[shimmer_1.5s_infinite] bg-[length:200%_100%] bg-gradient-to-r from-orange-600 via-amber-400 to-orange-600" />
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <Music className="w-6 h-6 text-zinc-600 mb-2" />
-                            <p className="text-[11px] text-zinc-400 font-medium">Subir Audio WAV/MP3 *</p>
-                            <Input 
-                              type="file" 
-                              accept="audio/*" 
-                              disabled={isUploadingAudio}
-                              onChange={(e) => {
-                                if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "audio");
-                              }}
-                              className="mt-2 bg-zinc-900 border-zinc-800 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
-                            />
-                            {uploadedAudioHash && (
-                              <p className="text-[9px] text-green-500 font-mono mt-2 truncate max-w-full">Listo en IPFS: {uploadedAudioHash.slice(0, 15)}...</p>
-                            )}
-                          </>
-                        )}
-                      </div>
-
-                      {/* SUBIDA DE PORTADA REAL A IPFS */}
-                      <div className={`border border-dashed rounded-lg p-4 text-center bg-zinc-950/40 flex flex-col justify-center items-center transition-all ${isUploadingCover ? 'border-orange-500/50 shadow-lg shadow-orange-500/5' : 'border-zinc-800'}`}>
-                        {isUploadingCover ? (
-                          <div className="flex flex-col items-center justify-center py-2">
-                            <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-2" />
-                            <p className="text-[10px] font-mono text-orange-400 animate-pulse">Subiendo portada...</p>
-                            <div className="w-24 bg-zinc-900 h-1 rounded-full mt-2 overflow-hidden">
-                              <div className="bg-gradient-to-r from-orange-600 to-amber-500 h-full w-full animate-[shimmer_1.5s_infinite] bg-[length:200%_100%] bg-gradient-to-r from-orange-600 via-amber-400 to-orange-600" />
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <Disc className="w-6 h-6 text-zinc-600 mb-2" />
-                            <p className="text-[11px] text-zinc-400 font-medium">Subir Portada del Álbum *</p>
-                            <Input 
-                              type="file" 
-                              accept="image/*" 
-                              disabled={isUploadingCover}
-                              onChange={(e) => {
-                                if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "cover");
-                              }}
-                              className="mt-2 bg-zinc-900 border-zinc-800 text-zinc-300 text-[10px] h-8 file:text-xs file:bg-zinc-800 file:text-zinc-200"
-                            />
-                            {uploadedCoverHash && (
-                              <p className="text-[9px] text-green-500 font-mono mt-2 truncate max-w-full">Listo en IPFS: Portada Subida</p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      disabled={isUploadingIPFS || !uploadedAudioHash}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs h-10 tracking-wider shadow-lg shadow-orange-500/10"
-                    >
-                      PUBLICAR LICENCIA DIGITAL EN BLOCKCHAIN
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+                  <Button 
+                    type="submit" 
+                    disabled={isUploadingIPFS || !uploadedAudioHash}
+                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs h-10 tracking-wider shadow-lg shadow-orange-500/10 rounded-xl"
+                  >
+                    PUBLICAR LICENCIA DIGITAL EN BLOCKCHAIN
+                  </Button>
+                </form>
+              </div>
             </TabsContent>
           </Tabs>
 
           {/* --- PANEL DE MODELO DE NEGOCIO (DESGLOSE 85/15) --- */}
-          <Card className="bg-zinc-950 border-zinc-900 overflow-hidden relative">
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none" />
-            <CardHeader className="border-b border-zinc-900 pb-4">
-              <CardTitle className="text-sm font-bold text-white flex items-center gap-2 tracking-wider uppercase">
-                <ShieldCheck className="w-4 h-4 text-orange-500" />
-                Desglose Transaccional (Split Directo 85/15)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                Cada adquisición de licencia digital o propina realiza una **distribución atómica de fondos** programada de forma inmutable. El **85%** va de forma instantánea a la clave pública del artista, mientras que el **15%** va a la tesorería de soporte de la plataforma.
-              </p>
-              
-              {/* Visualizador interactivo de Split */}
-              <div className="bg-black/50 border border-zinc-900 rounded-lg p-4 font-mono text-[11px] space-y-3 relative">
-                <div className="flex justify-between items-center text-zinc-500 border-b border-zinc-900 pb-2">
-                  <span>CONCEPTO</span>
-                  <span>DISTRIBUCIÓN</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-orange-500" /> Artista (Soberanía Directa)
-                  </span>
-                  <span className="text-orange-400 font-bold">85%</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-zinc-700" /> Plataforma (Mantenimiento de Red)
-                  </span>
-                  <span className="text-zinc-500">15%</span>
-                </div>
-
-                {isProcessingTx && txSplitDetails && (
-                  <div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col justify-center items-center p-4 border border-orange-500/20">
-                    <Loader2 className="w-5 h-5 text-orange-500 animate-spin mb-2" />
-                    <p className="text-[10px] text-orange-400 animate-pulse text-center uppercase tracking-wider font-bold">Procesando Split Atómico...</p>
-                    <p className="text-[9px] text-zinc-500 mt-1">
-                      Artista: {txSplitDetails.artistShare} {txSplitDetails.currency} | Plataforma: {txSplitDetails.platformShare} {txSplitDetails.currency}
-                    </p>
-                  </div>
-                )}
+            <h4 className="text-xs font-bold text-white flex items-center gap-2 tracking-wider uppercase mb-3">
+              <ShieldCheck className="w-4 h-4 text-orange-500" />
+              Split Directo de Fondos (85/15)
+            </h4>
+            <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+              Cada adquisición de licencia digital o propina realiza una **distribución atómica de fondos** programada de forma inmutable. El **85%** va de forma instantánea a la clave pública del artista, mientras que el **15%** va a la tesorería de soporte de la plataforma.
+            </p>
+            {/* Visualizador interactivo de Split */}
+            <div className="bg-black/50 border border-white/5 rounded-xl p-4 font-mono text-[11px] space-y-3 relative">
+              <div className="flex justify-between items-center text-zinc-500 border-b border-white/5 pb-2">
+                <span>CONCEPTO</span>
+                <span>DISTRIBUCIÓN</span>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-300 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-orange-500" /> Artista (Soberanía Directa)
+                </span>
+                <span className="text-orange-400 font-bold">85%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-300 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-zinc-700" /> Plataforma (Soporte)
+                </span>
+                <span className="text-zinc-500">15%</span>
+              </div>
+              {isProcessingTx && txSplitDetails && (
+                <div className="absolute inset-0 bg-black/90 rounded-xl flex flex-col justify-center items-center p-4 border border-orange-500/20">
+                  <Loader2 className="w-5 h-5 text-orange-500 animate-spin mb-2" />
+                  <p className="text-[10px] text-orange-400 animate-pulse text-center uppercase tracking-wider font-bold">Procesando Split Atómico...</p>
+                  <p className="text-[9px] text-zinc-500 mt-1">
+                    Artista: {txSplitDetails.artistShare} {txSplitDetails.currency} | Plataforma: {txSplitDetails.platformShare} {txSplitDetails.currency}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* COLUMNA DERECHA: Reproductor Analógico y Módulo Social (4 Columnas) */}
+        {/* ========================================================================= */}
+        {/* COLUMNA 3: REPRODUCTOR ANALÓGICO HOLOGRÁFICO (4 Columnas) - OPCIÓN 2 */}
+        {/* ========================================================================= */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           
           {/* REPRODUCTOR ANALÓGICO CON NEÓN PULSANTE AL RITMO DE LOS BAJOS */}
-          <Card 
-            className="bg-zinc-950 border-zinc-900 overflow-hidden relative sticky top-24 transition-all duration-100"
+          <div 
+            className="glass-card rounded-2xl overflow-hidden relative sticky top-24 transition-all duration-100 p-5 space-y-6"
             style={{
               boxShadow: isPlaying 
                 ? `0 0 ${bassIntensity * 25}px rgba(249, 115, 22, ${bassIntensity * 0.45})` 
                 : 'none',
               borderColor: isPlaying 
                 ? `rgba(249, 115, 22, ${0.1 + bassIntensity * 0.5})` 
-                : 'rgb(24, 24, 27)'
+                : 'rgba(255, 255, 255, 0.05)'
             }}
           >
-            <CardHeader className="border-b border-zinc-900 pb-4 flex flex-row items-center justify-between">
-              <CardTitle className="text-xs font-bold text-zinc-400 tracking-wider uppercase">Reproductor Analógico</CardTitle>
+            <div className="flex flex-row items-center justify-between border-b border-white/5 pb-4">
+              <span className="text-xs font-bold text-zinc-400 tracking-wider uppercase">Reproductor Analógico</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                 <span className="text-[9px] font-mono text-orange-400 uppercase tracking-widest">LOSSLESS STREAM</span>
               </div>
-            </CardHeader>
+            </div>
             
-            <CardContent className="pt-6 flex flex-col items-center">
-                            {/* Arte de Portada - ESFERA HOLOGRÁFICA 3D CYBERPUNK (Opción 2) */}
-              <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#0a0a0f]/80 border border-white/5 shadow-2xl shadow-black/80 mb-6 group flex items-center justify-center">
+            <div className="flex flex-col items-center">
+              {/* Arte de Portada - ESFERA HOLOGRÁFICA 3D CYBERPUNK (Opción 2) */}
+              <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#06060a]/80 border border-white/5 shadow-2xl shadow-black/80 mb-6 group flex items-center justify-center">
                 {currentTrack.ipfs_cover_hash.includes("album_genesis") || currentTrack.ipfs_cover_hash.includes("album_stable") || currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated") || !currentTrack.ipfs_cover_hash ? (
                   /* Renderizamos la Esfera Holográfica 3D Interactiva de la Opción 2 con CSS 3D */
                   <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-[#06060a]/95 rounded-2xl p-6">
@@ -1622,246 +1642,133 @@ export default function Home() {
                   max={100} 
                   step={0.1}
                   onValueChange={handleProgressChange}
-                  className="w-full [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-orange-500 [&_[role=slider]]:border-orange-500"
+                  className="cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] font-mono text-zinc-500">
                   <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(audioDuration || currentTrack.duration)}</span>
+                  <span>{formatTime(audioDuration)}</span>
                 </div>
               </div>
 
-              {/* Controles de Reproducción */}
+              {/* Controles de reproducción táctiles (Opción 2) */}
               <div className="flex items-center justify-center gap-6 mb-6">
                 <button 
-                  onClick={handlePrev}
-                  className="p-2 rounded-full text-zinc-400 hover:text-white transition-colors"
+                  onClick={() => setPlaybackRate(prev => prev === 1.0 ? 1.25 : prev === 1.25 ? 1.5 : prev === 1.5 ? 0.75 : 1.0)}
+                  className="text-[10px] font-mono font-bold text-zinc-500 hover:text-orange-400 transition-colors w-10 text-left"
+                  title="Velocidad de reproducción"
                 >
-                  <SkipBack className="w-5 h-5 fill-current" />
+                  {playbackRate}x
                 </button>
                 
+                <button 
+                  onClick={handlePlayPrev}
+                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all border border-white/5"
+                >
+                  <SkipBack className="w-4 h-4 fill-current" />
+                </button>
+
                 <button 
                   onClick={handlePlayPause}
-                  className="w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+                  className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center transition-all shadow-lg shadow-orange-500/25 border border-orange-400/20 transform hover:scale-105 active:scale-95"
                 >
-                  {isPlaying ? (
-                    <Pause className="w-5 h-5 fill-white" />
-                  ) : (
-                    <Play className="w-5 h-5 fill-white translate-x-0.5" />
-                  )}
+                  {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
                 </button>
-                
+
                 <button 
-                  onClick={handleNext}
-                  className="p-2 rounded-full text-zinc-400 hover:text-white transition-colors"
+                  onClick={handlePlayNext}
+                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-all border border-white/5"
                 >
-                  <SkipForward className="w-5 h-5 fill-current" />
+                  <SkipForward className="w-4 h-4 fill-current" />
+                </button>
+
+                <button 
+                  onClick={() => setVolume(prev => prev === 0 ? 80 : 0)}
+                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-all border border-white/5"
+                >
+                  {volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
 
-              {/* Control de Volumen */}
-              <div className="w-full flex items-center gap-3 bg-zinc-950 p-2.5 rounded-lg border border-zinc-900 mb-3">
-                <Volume2 className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+              {/* Control de Volumen Deslizante */}
+              <div className="flex items-center gap-3 w-full px-4 py-2 bg-black/40 rounded-xl border border-white/5">
+                <Volume className="w-3.5 h-3.5 text-zinc-500" />
                 <Slider 
                   value={[volume]} 
                   max={100} 
-                  onValueChange={(value) => setVolume(value[0])}
-                  className="w-full [&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5"
+                  step={1}
+                  onValueChange={handleVolumeChange}
+                  className="cursor-pointer"
                 />
+                <span className="text-[10px] font-mono text-zinc-500 w-6 text-right">{volume}%</span>
               </div>
+            </div>
+          </div>
 
-              {/* Control de Pitch / BPM (Velocidad de Reproducción y Rotación) */}
-              <div className="w-full flex flex-col gap-1.5 bg-zinc-950 p-2.5 rounded-lg border border-zinc-900 mb-6">
-                <div className="flex justify-between text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
-                  <span>Pitch / Tempo</span>
-                  <span className="text-orange-400 font-bold">{playbackRate.toFixed(2)}x ({Math.round(playbackRate * 100 - 100) >= 0 ? "+" : ""}{Math.round(playbackRate * 100 - 100)}%)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-mono text-zinc-600">0.5x</span>
-                  <Slider 
-                    value={[playbackRate]} 
-                    min={0.5}
-                    max={2.0} 
-                    step={0.05}
-                    onValueChange={(value) => setPlaybackRate(value[0])}
-                    className="w-full [&_[role=slider]]:h-2.5 [&_[role=slider]]:w-2.5 [&_[role=slider]]:bg-orange-500"
-                  />
-                  <span className="text-[9px] font-mono text-zinc-600">2.0x</span>
-                </div>
+          {/* MÓDULO SOCIAL DE COMENTARIOS Y PROPINAS INTEGRADO DEBAJO */}
+          <div className="glass-card rounded-2xl p-5 space-y-4">
+            <h4 className="text-xs font-bold text-white flex items-center gap-2 tracking-wider uppercase">
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              Muro Descentralizado & Propinas
+            </h4>
+            
+            {/* Formulario de Propina Directa */}
+            <div className="space-y-2">
+              <label className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block">Enviar Propina Directa al Artista</label>
+              <div className="flex gap-2">
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  placeholder="SOL" 
+                  value={tipAmount}
+                  onChange={(e) => setTipAmount(e.target.value)}
+                  className="bg-white/5 border-white/5 text-white text-xs h-9 rounded-xl"
+                />
+                <Button 
+                  onClick={handleSendTip}
+                  disabled={isProcessingTip || !connected}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-md shadow-cyan-500/10 whitespace-nowrap"
+                >
+                  {isProcessingTip ? "Enviando..." : "Dar Propina"}
+                </Button>
               </div>
+            </div>
 
-              {/* CID de IPFS */}
-              <div className="w-full text-center bg-zinc-950 p-2 rounded border border-zinc-900">
-                <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">IPFS CID DE LA PISTA</p>
-                <p className="text-[9px] font-mono text-orange-400/80 truncate mt-0.5" title={currentTrack.ipfs_audio_hash}>
-                  {currentTrack.ipfs_audio_hash}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* MÓDULO SOCIAL DE ARTISTA & PROPINAS */}
-          <Card className="bg-[#0c0c0f]/40 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/60 rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-500">
-            <CardHeader className="border-b border-zinc-900 pb-4">
-              <CardTitle className="text-xs font-bold text-white tracking-wider uppercase flex items-center gap-2">
-                <User className="w-4 h-4 text-orange-500" /> Perfil de Artista & Soporte
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
-                  <User className="w-5 h-5 text-zinc-400" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">{currentTrack.artist_name}</h4>
-                  <p className="text-[10px] font-mono text-zinc-500 truncate max-w-[180px]" title={currentTrack.artist_wallet}>
-                    {currentTrack.artist_wallet}
-                  </p>
-                </div>
-              </div>
-
-              {/* Botón de Propina */}
-              <div className="bg-zinc-950/80 p-3.5 rounded-lg border border-zinc-900 space-y-3">
-                <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> Apoyar al Artista (Tipping)
-                </p>
-                
-                <div className="flex gap-2">
-                  <Input 
-                    type="number" 
-                    value={tipAmount}
-                    onChange={(e) => setTipAmount(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800 text-zinc-200 h-8 text-xs focus-visible:ring-orange-500 flex-1"
-                    placeholder="Monto"
-                  />
-                  
-                  <select 
-                    value={tipCurrency}
-                    onChange={(e) => setTipCurrency(e.target.value)}
-                    className="bg-zinc-950 border border-zinc-800 text-zinc-200 rounded-lg h-8 px-2 text-xs focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
-                  >
-                    <option value="SOL">SOL</option>
-                    <option value="USDC">USDC</option>
-                    <option value="USDT">USDT</option>
-                    <option value="ETH">ETH</option>
-                    <option value="BTC">BTC</option>
-                  </select>
-
-                  <Button 
-                    size="sm"
-                    disabled={isProcessingTip}
-                    onClick={handleSendTip}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 text-[10px]"
-                  >
-                    {isProcessingTip ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                  </Button>
-                </div>
-                
-                <p className="text-[9px] text-zinc-500 leading-tight">
-                  Las propinas aplican el split directo del 85% directo al artista y 15% de soporte técnico de la red.
-                </p>
-              </div>
-
-              {/* Muro de Comentarios Descentralizados */}
-              <div className="border-t border-zinc-900 pt-4 space-y-3">
-                <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
-                  Muro de Mensajes Descentralizado
-                </p>
-
-                {/* Formulario de comentario */}
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input 
-                      type="text" 
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
-                      className="bg-zinc-950 border-zinc-900 text-zinc-200 h-7 text-[10px] focus-visible:ring-orange-500 w-1/3"
-                      placeholder="Tu Alias"
-                    />
-                    <Input 
-                      type="text" 
-                      value={newCommentText}
-                      onChange={(e) => setNewCommentText(e.target.value)}
-                      className="bg-zinc-950 border-zinc-900 text-zinc-200 h-7 text-[10px] focus-visible:ring-orange-500 flex-1"
-                      placeholder="Escribe un mensaje de apoyo..."
-                    />
-                    <Button 
-                      size="sm"
-                      disabled={isSubmittingComment || !newCommentText.trim() || !authorName.trim()}
-                      onClick={async () => {
-                        if (!connected || !publicKey) {
-                          toast.error("Wallet no conectada", {
-                            description: "Por favor conecta tu wallet para dejar un mensaje en el muro."
-                          });
-                          return;
-                        }
-                        setIsSubmittingComment(true);
-                        try {
-                          const hasLicense = purchasedTracks.some(trackId => {
-                            const track = tracks.find(t => t.track_id === trackId);
-                            return track && track.artist_wallet.toLowerCase() === currentTrack.artist_wallet.toLowerCase();
-                          });
-
-                          const newComment = {
-                            comment_id: `comment-${Math.random().toString(36).substr(2, 9)}`,
-                            artist_wallet: currentTrack.artist_wallet,
-                            author_wallet: publicKey.toString(),
-                            author_name: authorName,
-                            text: newCommentText,
-                            timestamp: Date.now(),
-                            has_license: hasLicense
-                          };
-
-                          setComments(prev => [newComment, ...prev]);
-                          setNewCommentText("");
-                          toast.success("Mensaje publicado", {
-                            description: "Tu mensaje ha sido grabado en el muro descentralizado."
-                          });
-                        } catch (error) {
-                          console.error(error);
-                        } finally {
-                          setIsSubmittingComment(false);
-                        }
-                      }}
-                      className="bg-zinc-900 hover:bg-zinc-800 text-orange-400 border border-zinc-800 font-bold h-7 text-[9px] px-2.5"
-                    >
-                      {isSubmittingComment ? <Loader2 className="w-3 h-3 animate-spin" /> : "Enviar"}
-                    </Button>
+            {/* Lista de Comentarios */}
+            <div className="space-y-3 pt-2 border-t border-white/5">
+              <div className="max-h-40 overflow-y-auto space-y-2.5 pr-1">
+                {comments.map((c, i) => (
+                  <div key={i} className="bg-black/30 border border-white/5 rounded-xl p-2.5">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[9px] font-mono text-cyan-400 font-bold truncate max-w-[100px]">{c.wallet.slice(0, 4)}...{c.wallet.slice(-4)}</span>
+                      <span className="text-[8px] text-zinc-500 font-mono">{new Date(c.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-300 leading-relaxed">{c.text}</p>
                   </div>
-                </div>
-
-                {/* Lista de comentarios */}
-                <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-900">
-                  {comments
-                    .filter(c => c.artist_wallet.toLowerCase() === currentTrack.artist_wallet.toLowerCase())
-                    .map((comment) => (
-                      <div key={comment.comment_id} className="bg-zinc-950/50 p-2 rounded border border-zinc-900 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold text-zinc-300">{comment.author_name}</span>
-                            <span className="text-[8px] font-mono text-zinc-600 truncate max-w-[60px]" title={comment.author_wallet}>
-                              ({comment.author_wallet})
-                            </span>
-                          </div>
-                          {comment.has_license && (
-                            <span className="text-[7px] font-mono uppercase bg-orange-500/10 text-orange-400 border border-orange-500/20 px-1 py-0.2 rounded flex items-center gap-0.5">
-                              <ShieldCheck className="w-2 h-2" /> Licencia
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-zinc-400 leading-snug">{comment.text}</p>
-                        <p className="text-[7px] font-mono text-zinc-600 text-right">
-                          {new Date(comment.timestamp).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                  {comments.filter(c => c.artist_wallet.toLowerCase() === currentTrack.artist_wallet.toLowerCase()).length === 0 && (
-                    <p className="text-[9px] font-mono text-zinc-600 text-center py-4">No hay mensajes en este muro aún.</p>
-                  )}
-                </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Formulario de Comentario */}
+              <div className="flex gap-2">
+                <Input 
+                  type="text" 
+                  placeholder="Añadir comentario público..." 
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="bg-white/5 border-white/5 text-white text-xs h-9 rounded-xl"
+                />
+                <Button 
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim() || !connected}
+                  className="bg-white/5 hover:bg-white/10 text-white font-bold text-xs h-9 px-3 rounded-xl border border-white/5"
+                >
+                  Enviar
+                </Button>
+              </div>
+            </div>
+          </div>
+
         </div>
+
       </main>
 
       {/* --- PIE DE PÁGINA --- */}
