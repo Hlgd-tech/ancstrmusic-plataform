@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ancstr-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7700" />
+      <stop offset="100%" stop-color="#ffaa00" />
+    </linearGradient>
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Fingerprint Icon -->
+  <path d="M40,25 C45,18 55,18 60,25 M35,32 C42,23 58,23 65,32 M30,40 C39,28 61,28 70,40 M40,40 C45,35 55,35 60,40 M45,45 L45,55 M55,45 L55,55 M50,35 L50,55" 
+        stroke="url(#ancstr-glow)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#neon-glow)" />
+  <!-- Text ANCSTR -->
+  <text x="85" y="48" font-family="'Space Grotesk', sans-serif" font-size="28" font-weight="900" fill="url(#ancstr-glow)" letter-spacing="4" filter="url(#neon-glow)">ANCSTR</text>
+  <text x="85" y="62" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="400" fill="#94a3b8" letter-spacing="2">THE SOUND OF HERITAGE</text>
+</svg>
