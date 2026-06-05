@@ -994,10 +994,20 @@ export default function Home() {
                     {/* Grid de Canciones */}
                     <div className="flex-1 overflow-y-auto no-scrollbar pr-1">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredTracks.map((track) => {
-                          const isCurrent = currentTrack.track_id === track.track_id;
-                          const isPurchased = purchasedTracks.includes(track.track_id);
-                          return (
+                        {tracks
+                          .filter(track => {
+                            const matchesGenre = selectedGenre === "Todos" || track.genre === selectedGenre;
+                            const matchesSearch = 
+                              track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              track.artist_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              track.genre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              (track.album && track.album.toLowerCase().includes(searchQuery.toLowerCase()));
+                            return matchesGenre && matchesSearch;
+                          })
+                          .map((track) => {
+                            const isCurrent = currentTrack.track_id === track.track_id;
+                            const isPurchased = purchasedTracks.includes(track.track_id);
+                            return (
                             <div 
                               key={track.track_id}
                               className={`bg-[#0a0f16]/40 border rounded-xl p-3.5 flex gap-4 transition-all duration-300 group hover:border-cyan-500/30 hover:shadow-[0_0_15px_rgba(0,180,255,0.08)] ${
@@ -1096,14 +1106,14 @@ export default function Home() {
                       <p className="text-xs text-slate-400 mt-1">Historial de licencias de música digital inmutables adquiridas en Solana.</p>
                     </div>
                     <div className="flex-1 overflow-y-auto no-scrollbar pr-1 flex flex-col gap-3">
-                      {purchasedRecords.length === 0 ? (
+                      {userHistory.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                           <Disc className="w-12 h-12 text-slate-600 animate-spin [animation-duration:10s] mb-3" />
                           <span className="text-xs font-mono text-slate-400">AÚN NO HAS ADQUIRIDO NINGUNA LICENCIA</span>
                           <p className="text-[10px] text-slate-500 max-w-xs mt-1">Explora el catálogo y adquiere tu primera licencia musical Web3.</p>
                         </div>
                       ) : (
-                        purchasedRecords.map((record) => (
+                        userHistory.map((record) => (
                           <div 
                             key={record.track_id}
                             className="bg-[#0a0f16]/40 border border-white/5 rounded-xl p-3.5 flex items-center justify-between gap-4"
