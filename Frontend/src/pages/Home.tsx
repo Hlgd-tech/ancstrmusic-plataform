@@ -251,7 +251,7 @@ export default function Home() {
   // --- CONSTRUIR URL DE IPFS ---
   const getAudioUrl = (hash: string) => {
     if (hash.startsWith("Qm") || hash.startsWith("ba")) {
-      return `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ipfs/stream/${hash}`;
+      return `${import.meta.env.VITE_API_URL || 'https://ancstrmusic-plataform-1.onrender.com'}/ipfs/stream/${hash}`;
     }
     if (hash.startsWith("http")) {
       return hash;
@@ -635,7 +635,7 @@ export default function Home() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ipfs/upload`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ancstrmusic-plataform-1.onrender.com'}/ipfs/upload`, {
         method: "POST",
         body: formData,
       });
