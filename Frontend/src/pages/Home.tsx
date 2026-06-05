@@ -142,6 +142,8 @@ export default function Home() {
   const [tracks, setTracks] = useState<Track[]>(INITIAL_TRACKS);
   const [activeTab, setActiveTab] = useState<string>("player");
   const [isAncstrEraOpen, setIsAncstrEraOpen] = useState(true);
+  const [isUpNextOpen, setIsUpNextOpen] = useState(true);
+  const [isEarnAncOpen, setIsEarnAncOpen] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<string>("Todos");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentTrack, setCurrentTrack] = useState<Track>(INITIAL_TRACKS[0]);
@@ -1663,78 +1665,118 @@ export default function Home() {
               </div>
             </div>
 
-            {/* UP NEXT (Playlist / Tracklist) */}
+            {/* UP NEXT (Playlist / Tracklist) - Colapsable Interactiva */}
             <div className="flex flex-col gap-4 mt-6">
-              <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-xs font-mono text-orange-400 font-extrabold uppercase tracking-widest">UP NEXT</span>
+              <div 
+                onClick={() => setIsUpNextOpen(!isUpNextOpen)}
+                className="flex justify-between items-center pb-2 border-b border-white/5 cursor-pointer select-none group/header"
+              >
                 <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-orange-400 font-extrabold uppercase tracking-widest group-hover/header:text-orange-300 transition-colors">UP NEXT</span>
+                  <ChevronDown 
+                    className={`w-4 h-4 text-orange-400/70 group-hover/header:text-orange-400 transition-transform duration-500 ${
+                      isUpNextOpen ? "transform rotate-180" : ""
+                    }`} 
+                  />
+                </div>
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-[9px] font-mono text-slate-400 uppercase">AUTOPLAY</span>
                   <button className="w-7 h-4 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center p-0.5 cursor-pointer">
                     <div className="w-2.5 h-2.5 rounded-full bg-orange-500 translate-x-3 transition-transform duration-300 shadow-[0_0_8px_#ff7700]" />
                   </button>
                 </div>
               </div>
-              <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto no-scrollbar pr-1">
-                {tracks.slice(0, 3).map((track) => {
-                  const isCurrent = currentTrack.track_id === track.track_id;
-                  return (
-                    <div 
-                      key={track.track_id}
-                      onClick={() => {
-                        setCurrentTrack(track);
-                        setIsPlaying(true);
-                      }}
-                      className={`bg-[#0a0f16]/40 border rounded-xl p-2 flex items-center justify-between gap-3 cursor-pointer group transition-all ${
-                        isCurrent ? "border-orange-500/40 bg-orange-500/5" : "border-white/5 hover:border-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img src={track.ipfs_cover_hash} alt={track.title} className="w-9 h-9 rounded-lg object-cover bg-black/40 border border-white/5" />
-                        <div className="flex flex-col min-w-0">
-                          <span className={`text-[10px] font-bold font-mono truncate ${isCurrent ? "text-orange-400" : "text-slate-200 group-hover:text-orange-400 transition-colors"}`}>{track.title}</span>
-                          <span className="text-[8px] text-slate-500 font-mono mt-0.5 truncate">{track.artist_name}</span>
+              
+              <div 
+                className={`flex flex-col gap-2 transition-all duration-500 ease-in-out overflow-hidden ${
+                  isUpNextOpen 
+                    ? "max-h-[300px] opacity-100 mt-1" 
+                    : "max-h-0 opacity-0 pointer-events-none"
+                }`}
+              >
+                <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto no-scrollbar pr-1">
+                  {tracks.slice(0, 3).map((track) => {
+                    const isCurrent = currentTrack.track_id === track.track_id;
+                    return (
+                      <div 
+                        key={track.track_id}
+                        onClick={() => {
+                          setCurrentTrack(track);
+                          setIsPlaying(true);
+                        }}
+                        className={`bg-[#0a0f16]/40 border rounded-xl p-2 flex items-center justify-between gap-3 cursor-pointer group transition-all ${
+                          isCurrent ? "border-orange-500/40 bg-orange-500/5" : "border-white/5 hover:border-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img src={track.ipfs_cover_hash} alt={track.title} className="w-9 h-9 rounded-lg object-cover bg-black/40 border border-white/5" />
+                          <div className="flex flex-col min-w-0">
+                            <span className={`text-[10px] font-bold font-mono truncate ${isCurrent ? "text-orange-400" : "text-slate-200 group-hover:text-orange-400 transition-colors"}`}>{track.title}</span>
+                            <span className="text-[8px] text-slate-500 font-mono mt-0.5 truncate">{track.artist_name}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isCurrent && isPlaying ? (
+                            <div className="flex items-end gap-0.5 h-3">
+                              <div className="w-0.5 bg-orange-400 animate-music-bar-1" />
+                              <div className="w-0.5 bg-orange-400 animate-music-bar-2" />
+                              <div className="w-0.5 bg-orange-400 animate-music-bar-3" />
+                            </div>
+                          ) : (
+                            <span className="text-[9px] font-mono text-slate-500">{formatTime(track.duration)}</span>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {isCurrent && isPlaying ? (
-                          <div className="flex items-end gap-0.5 h-3">
-                            <div className="w-0.5 bg-orange-400 animate-music-bar-1" />
-                            <div className="w-0.5 bg-orange-400 animate-music-bar-2" />
-                            <div className="w-0.5 bg-orange-400 animate-music-bar-3" />
-                          </div>
-                        ) : (
-                          <span className="text-[9px] font-mono text-slate-500">{formatTime(track.duration)}</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* EARN ANC (Tarjeta de Recompensas de Progreso con Cubo 3D Giratorio) */}
+            {/* EARN ANC (Tarjeta de Recompensas de Progreso con Cubo 3D Giratorio) - Colapsable Interactiva */}
             <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-white/5">
-              <div className="bg-[#0a0f16]/40 border border-white/5 rounded-2xl p-4 flex justify-between items-center relative overflow-hidden group">
-                <div className="flex flex-col gap-2 flex-1">
-                  <span className="text-[9px] font-mono text-orange-400 font-bold uppercase tracking-wider">EARN ANC</span>
-                  <div className="flex flex-col">
-                    <span className="text-xl font-mono font-extrabold text-slate-100">3,200 ANC</span>
-                    <span className="text-[9px] font-mono text-slate-500 mt-0.5">LOCKED • GOAL: 5,000 ANC</span>
-                  </div>
-                  {/* Barra de progreso de neón naranja */}
-                  <Progress value={64} className="h-1.5 bg-white/5 [&>div]:bg-orange-500 shadow-[0_0_8px_rgba(255,100,0,0.2)]" />
+              <div 
+                onClick={() => setIsEarnAncOpen(!isEarnAncOpen)}
+                className="flex justify-between items-center pb-1 cursor-pointer select-none group/header"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-orange-400 font-extrabold uppercase tracking-widest group-hover/header:text-orange-300 transition-colors">EARN ANC</span>
+                  <ChevronDown 
+                    className={`w-4 h-4 text-orange-400/70 group-hover/header:text-orange-400 transition-transform duration-500 ${
+                      isEarnAncOpen ? "transform rotate-180" : ""
+                    }`} 
+                  />
                 </div>
+              </div>
+              
+              <div 
+                className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                  isEarnAncOpen 
+                    ? "max-h-[300px] opacity-100 mt-1" 
+                    : "max-h-0 opacity-0 pointer-events-none"
+                }`}
+              >
+                <div className="bg-[#0a0f16]/40 border border-white/5 rounded-2xl p-4 flex justify-between items-center relative overflow-hidden group">
+                  <div className="flex flex-col gap-2 flex-1">
+                    <div className="flex flex-col">
+                      <span className="text-xl font-mono font-extrabold text-slate-100">3,200 ANC</span>
+                      <span className="text-[9px] font-mono text-slate-500 mt-0.5">LOCKED • GOAL: 5,000 ANC</span>
+                    </div>
+                    {/* Barra de progreso de neón naranja */}
+                    <Progress value={64} className="h-1.5 bg-white/5 [&>div]:bg-orange-500 shadow-[0_0_8px_rgba(255,100,0,0.2)]" />
+                  </div>
 
-                {/* Cubo Tridimensional de Alambre Giratorio (Wireframe 3D Cube) */}
-                <div className="w-14 h-14 relative flex items-center justify-center overflow-visible">
-                  <div className="cube-container">
-                    <div className="cube">
-                      <div className="face front" />
-                      <div className="face back" />
-                      <div className="face left" />
-                      <div className="face right" />
-                      <div className="face top" />
-                      <div className="face bottom" />
+                  {/* Cubo Tridimensional de Alambre Giratorio (Wireframe 3D Cube) */}
+                  <div className="w-14 h-14 relative flex items-center justify-center overflow-visible">
+                    <div className="cube-container">
+                      <div className="cube">
+                        <div className="face front" />
+                        <div className="face back" />
+                        <div className="face left" />
+                        <div className="face right" />
+                        <div className="face top" />
+                        <div className="face bottom" />
+                      </div>
                     </div>
                   </div>
                 </div>
