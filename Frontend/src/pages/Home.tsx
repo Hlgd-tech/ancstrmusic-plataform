@@ -1325,7 +1325,7 @@ export default function Home() {
                         className="bg-white/5 border border-white/5 text-white text-xs h-9.5 rounded-xl px-3 w-full focus:outline-none focus:border-orange-500/50"
                       >
                         <option value="" disabled className="bg-[#0a0a0f]">Seleccionar género</option>
-                        {GENRE_OPTIONS.map((g) => (
+                        {SPOTIFY_GENRES.map((g) => (
                           <option key={g} value={g} className="bg-[#0a0a0f]">{g}</option>
                         ))}
                       </select>
