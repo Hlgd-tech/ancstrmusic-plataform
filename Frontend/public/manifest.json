@@ -1,0 +1,24 @@
+{
+  "short_name": "ANCSTR",
+  "name": "ANCSTR MUSIC - Streaming Descentralizado",
+  "description": "Plataforma descentralizada de streaming de música con splits de pagos instantáneos.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#05080c",
+  "theme_color": "#ff7700",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment", "finance"]
+}
