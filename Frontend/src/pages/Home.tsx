@@ -1463,27 +1463,80 @@ export default function Home() {
             </CardHeader>
             
             <CardContent className="pt-6 flex flex-col items-center">
-              {/* Arte de Portada */}
-              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl mb-6 group flex items-center justify-center">
-                {/* Si la portada es la por defecto (cubo 3D), le aplicamos la animación 3D flotante */}
-                <img 
-                  src={currentTrack.ipfs_cover_hash} 
-                  alt={currentTrack.title} 
-                  className={`w-full h-full object-cover transition-transform duration-700 ${
-                    currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated")
-                      ? isPlaying ? "animate-cube-3d scale-90" : "scale-90"
-                      : isPlaying ? "animate-spin-vinyl rounded-full max-w-[85%] max-h-[85%] border-4 border-zinc-800" : "scale-100"
-                  }`}
-                  style={{
-                    animationDuration: isPlaying 
-                      ? currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated")
-                        ? `${15 / playbackRate}s` // El cubo rota más rápido con mayor pitch
-                        : `${4 / playbackRate}s`  // El vinilo gira más rápido con mayor pitch
-                      : '0s'
-                  }}
-                />
+                            {/* Arte de Portada - ESFERA HOLOGRÁFICA 3D CYBERPUNK (Opción 2) */}
+              <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#0a0a0f]/80 border border-white/5 shadow-2xl shadow-black/80 mb-6 group flex items-center justify-center">
+                {currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated") ? (
+                  /* Renderizamos la Esfera Holográfica 3D Interactiva de la Opción 2 */
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {/* Glow dual detrás de la esfera */}
+                    <div className="absolute w-4/5 h-4/5 rounded-full bg-gradient-to-tr from-cyan-500/10 to-orange-500/10 blur-3xl animate-pulse" />
+                    
+                    {/* Estructura orbital de la esfera */}
+                    <div className={`relative w-4/5 h-4/5 rounded-full border border-white/5 flex items-center justify-center transition-all duration-1000 ${isPlaying ? 'animate-[spin_20s_linear_infinite]' : ''}`}>
+                      {/* Anillo exterior de partículas */}
+                      <div className="absolute inset-2 rounded-full border border-dashed border-cyan-500/20 animate-[spin_12s_linear_infinite]" />
+                      {/* Anillo interior */}
+                      <div className="absolute inset-8 rounded-full border border-dashed border-orange-500/20 animate-[spin_8s_linear_infinite_reverse]" />
+                      
+                      {/* Ondas de sonido holográficas esféricas */}
+                      <svg className="w-3/4 h-3/5 absolute text-cyan-400 opacity-80" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="0.25" strokeDasharray="1 4" className="opacity-40" />
+                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.25" strokeDasharray="1 3" className="opacity-30" />
+                        
+                        {/* Onda sinusoidal interactiva 1 (Azul Cyber) */}
+                        <path
+                          d="M 10,50 Q 25,25 40,50 T 70,50 T 90,50"
+                          fill="none"
+                          stroke="url(#cyber-grad-1)"
+                          strokeWidth="1.2"
+                          className={isPlaying ? 'animate-[pulse_1.5s_ease-in-out_infinite]' : ''}
+                        />
+                        {/* Onda sinusoidal interactiva 2 (Naranja Cyber) */}
+                        <path
+                          d="M 10,50 Q 25,75 40,50 T 70,50 T 90,50"
+                          fill="none"
+                          stroke="url(#cyber-grad-2)"
+                          strokeWidth="0.8"
+                          className={isPlaying ? 'animate-[pulse_2s_ease-in-out_infinite_reverse]' : ''}
+                        />
+                        <defs>
+                          <linearGradient id="cyber-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#06b6d4" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
+                          <linearGradient id="cyber-grad-2" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.4" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+
+                      {/* Núcleo holográfico central */}
+                      <div className={`w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-orange-500 opacity-10 blur-xl transition-all duration-500 ${isPlaying ? 'scale-125 opacity-25' : 'scale-100'}`} />
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-orange-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                        <div className="w-4 h-4 rounded-full bg-white animate-ping" />
+                      </div>
+                    </div>
+                    
+                    
+                    {/* Pequeños puntos flotantes */}
+                    <div className="absolute top-8 left-16 w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                    <div className="absolute bottom-10 right-16 w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse [animation-delay:0.7s]" />
+                  </div>
+                ) : (
+                  /* Si es una portada personalizada, la mostramos con forma de vinilo giratorio */
+                  <img 
+                    src={currentTrack.ipfs_cover_hash} 
+                    alt={currentTrack.title} 
+                    className={`w-full h-full object-cover transition-transform duration-700 ${
+                      isPlaying ? "animate-spin-vinyl rounded-full max-w-[85%] max-h-[85%] border-4 border-zinc-800" : "scale-100"
+                    }`}
+                    style={{
+                      animationDuration: isPlaying ? `${4 / playbackRate}s` : '0s'
+                    }}
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                
                 {/* Título flotante */}
                 <div className="absolute bottom-4 left-4 right-4">
                   <h3 className="text-base font-extrabold text-white tracking-tight drop-shadow-md">{currentTrack.title}</h3>
