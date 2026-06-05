@@ -1564,6 +1564,7 @@ export default function Home() {
       <audio
         ref={audioRef}
         src={getAudioUrl(currentTrack.ipfs_audio_hash)}
+        crossOrigin="anonymous"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleAudioEnded}
