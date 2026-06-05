@@ -237,6 +237,7 @@ export default function Home() {
 
   // --- REFERENCIAS ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [gatewayIndex, setGatewayIndex] = useState(0);
 
   // --- WEB AUDIO API & INTERACTIVIDAD ---
@@ -307,7 +308,8 @@ export default function Home() {
       
       if (!analyserRef.current) {
         const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64; // Analizador compacto para 13 ondas
+        // Aumentamos fftSize para capturar mejor los datos de forma de onda del osciloscopio
+        analyser.fftSize = 512; 
         analyserRef.current = analyser;
       }
       
@@ -319,12 +321,126 @@ export default function Home() {
         sourceRef.current = source;
       }
       
-      // Iniciar el loop de animación para capturar frecuencias
       const analyser = analyserRef.current;
       const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
+      const dataArrayFreq = new Uint8Array(bufferLength);
+      const dataArrayTime = new Uint8Array(bufferLength);
+      
+      let phaseOffset1 = 0;
+      let phaseOffset2 = 0;
       
       const updateFrequencies = () => {
+        // 1. DIBUJAR EN EL CANVAS DEL OSCILOSCOPIO
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const canvasCtx = canvas.getContext("2d");
+          if (canvasCtx) {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Limpiar canvas con transparencia
+            canvasCtx.clearRect(0, 0, width, height);
+            
+            if (isPlaying) {
+              analyser.getByteTimeDomainData(dataArrayTime);
+            } else {
+              // Si no está reproduciendo, llenar con valores neutros (forma de onda plana)
+              dataArrayTime.fill(128);
+            }
+            
+            // Función auxiliar para dibujar una onda
+            const drawWave = (
+              color: string, 
+              lineWidth: number, 
+              glowColor: string, 
+              glowBlur: number, 
+              amplitudeMultiplier: number, 
+              phaseOffset: number,
+              frequencyMultiplier: number = 1
+            ) => {
+              canvasCtx.beginPath();
+              canvasCtx.lineWidth = lineWidth;
+              canvasCtx.strokeStyle = color;
+              
+              if (glowBlur > 0) {
+                canvasCtx.shadowBlur = glowBlur;
+                canvasCtx.shadowColor = glowColor;
+              } else {
+                canvasCtx.shadowBlur = 0;
+              }
+              
+              const sliceWidth = width / bufferLength;
+              let x = 0;
+              
+              for (let i = 0; i < bufferLength; i++) {
+                // Obtener el valor del dominio del tiempo (0 a 255, 128 es el centro)
+                const v = dataArrayTime[i] / 128.0; // Normalizar alrededor de 1.0
+                const deviation = v - 1.0; // Desviación del centro (-1.0 a 1.0)
+                
+                // Aplicar un factor de forma de campana (Hanning window-like) para atenuar los extremos
+                const edgeAttenuation = Math.sin((i / (bufferLength - 1)) * Math.PI);
+                
+                // Añadir un desfase sinusoidal para las ondas secundarias
+                const waveShift = Math.sin((i / bufferLength) * Math.PI * 4 * frequencyMultiplier + phaseOffset) * 0.05;
+                
+                // Calcular posición Y final
+                const y = (height / 2) + (deviation * amplitudeMultiplier + waveShift) * (height / 3) * edgeAttenuation;
+                
+                if (i === 0) {
+                  canvasCtx.moveTo(x, y);
+                } else {
+                  canvasCtx.lineTo(x, y);
+                }
+                
+                x += sliceWidth;
+              }
+              
+              canvasCtx.stroke();
+            };
+            
+            // Incrementar fases para animar las ondas secundarias
+            if (isPlaying) {
+              phaseOffset1 += 0.04;
+              phaseOffset2 -= 0.03;
+            }
+            
+            // Dibujar 3 ondas superpuestas para efecto tridimensional analógico (Sonic Laboratory)
+            // Onda 1: Secundaria tenue azul/cyan (desfase negativo)
+            drawWave(
+              "rgba(6, 182, 212, 0.4)", 
+              1.5, 
+              "rgba(6, 182, 212, 0.6)", 
+              10, 
+              0.65, 
+              phaseOffset1,
+              1.2
+            );
+            
+            // Onda 2: Secundaria tenue magenta/púrpura (desfase positivo)
+            drawWave(
+              "rgba(168, 85, 247, 0.35)", 
+              1.5, 
+              "rgba(168, 85, 247, 0.5)", 
+              8, 
+              0.5, 
+              phaseOffset2,
+              0.8
+            );
+            
+            // Onda 3: Principal naranja de neón vibrante (sincronizada al audio real)
+            drawWave(
+              "rgba(249, 115, 22, 0.95)", 
+              3.0, 
+              "rgba(249, 115, 22, 0.9)", 
+              20, 
+              1.0, 
+              0,
+              1.0
+            );
+          }
+        }
+        
+        // 2. ACTUALIZAR FRECUENCIAS PARA EL BANNER DE FONDO Y PULSO DE BAJOS
         if (!isPlaying) {
           // Si está pausado, reducir suavemente las barras a un estado de reposo
           setDynamicFrequencies(prev => prev.map(val => Math.max(10, val - 1.5)));
@@ -333,7 +449,7 @@ export default function Home() {
           return;
         }
         
-        analyser.getByteFrequencyData(dataArray);
+        analyser.getByteFrequencyData(dataArrayFreq);
         
         // Mapear los datos de frecuencia a las 13 barras del banner
         const newFreqs = [];
@@ -342,7 +458,7 @@ export default function Home() {
         for (let i = 0; i < 13; i++) {
           // Tomamos una muestra distribuida de frecuencias
           const binIndex = Math.min(Math.floor(i * (bufferLength / 13)), bufferLength - 1);
-          const val = dataArray[binIndex];
+          const val = dataArrayFreq[binIndex];
           // Convertir rango 0-255 a escala de píxeles/porcentaje (10px a 50px de altura)
           const height = Math.max(8, (val / 255) * 45);
           newFreqs.push(height);
@@ -368,8 +484,114 @@ export default function Home() {
       
     } catch (e) {
       console.warn("La inicialización de Web Audio API falló (CORS o restricción de navegador):", e);
-      // Fallback: Si falla, creamos un generador de ondas aleatorias fluidas
+      
+      // Fallback: Generador de ondas aleatorias fluidas y dibujo del canvas en modo offline
+      let phaseOffset1 = 0;
+      let phaseOffset2 = 0;
+      
       const fallbackLoop = () => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const canvasCtx = canvas.getContext("2d");
+          if (canvasCtx) {
+            const width = canvas.width;
+            const height = canvas.height;
+            canvasCtx.clearRect(0, 0, width, height);
+            
+            // Simular datos de forma de onda usando funciones trigonométricas en fallback
+            const simulatedTimeData = [];
+            const time = Date.now() * 0.005;
+            
+            for (let i = 0; i < 256; i++) {
+              let deviation = 0;
+              if (isPlaying) {
+                // Sumar múltiples senoides para una forma de onda orgánica compleja
+                deviation = Math.sin(i * 0.1 - time) * 0.3 + 
+                            Math.cos(i * 0.05 + time * 1.5) * 0.15 + 
+                            Math.sin(i * 0.25 - time * 0.7) * 0.05;
+              }
+              simulatedTimeData.push(deviation);
+            }
+            
+            const drawSimulatedWave = (
+              color: string, 
+              lineWidth: number, 
+              glowColor: string, 
+              glowBlur: number, 
+              amplitudeMultiplier: number, 
+              phaseOffset: number,
+              frequencyMultiplier: number = 1
+            ) => {
+              canvasCtx.beginPath();
+              canvasCtx.lineWidth = lineWidth;
+              canvasCtx.strokeStyle = color;
+              
+              if (glowBlur > 0) {
+                canvasCtx.shadowBlur = glowBlur;
+                canvasCtx.shadowColor = glowColor;
+              } else {
+                canvasCtx.shadowBlur = 0;
+              }
+              
+              const sliceWidth = width / simulatedTimeData.length;
+              let x = 0;
+              
+              for (let i = 0; i < simulatedTimeData.length; i++) {
+                const deviation = simulatedTimeData[i];
+                const edgeAttenuation = Math.sin((i / (simulatedTimeData.length - 1)) * Math.PI);
+                const waveShift = Math.sin((i / simulatedTimeData.length) * Math.PI * 4 * frequencyMultiplier + phaseOffset) * 0.05;
+                const y = (height / 2) + (deviation * amplitudeMultiplier + waveShift) * (height / 3) * edgeAttenuation;
+                
+                if (i === 0) {
+                  canvasCtx.moveTo(x, y);
+                } else {
+                  canvasCtx.lineTo(x, y);
+                }
+                x += sliceWidth;
+              }
+              canvasCtx.stroke();
+            };
+            
+            if (isPlaying) {
+              phaseOffset1 += 0.04;
+              phaseOffset2 -= 0.03;
+            }
+            
+            // Onda 1: Cyan
+            drawSimulatedWave(
+              "rgba(6, 182, 212, 0.4)", 
+              1.5, 
+              "rgba(6, 182, 212, 0.6)", 
+              10, 
+              0.65, 
+              phaseOffset1,
+              1.2
+            );
+            
+            // Onda 2: Magenta
+            drawSimulatedWave(
+              "rgba(168, 85, 247, 0.35)", 
+              1.5, 
+              "rgba(168, 85, 247, 0.5)", 
+              8, 
+              0.5, 
+              phaseOffset2,
+              0.8
+            );
+            
+            // Onda 3: Naranja
+            drawSimulatedWave(
+              "rgba(249, 115, 22, 0.95)", 
+              3.0, 
+              "rgba(249, 115, 22, 0.9)", 
+              20, 
+              1.0, 
+              0,
+              1.0
+            );
+          }
+        }
+        
         if (isPlaying) {
           setDynamicFrequencies(prev => prev.map(() => Math.max(8, Math.floor(Math.random() * 38) + 8)));
           setBassIntensity(Math.random() * 0.4 + 0.1);
@@ -379,6 +601,7 @@ export default function Home() {
         }
         animationFrameIdRef.current = requestAnimationFrame(fallbackLoop);
       };
+      
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
@@ -934,9 +1157,53 @@ export default function Home() {
           </section>
 
           {/* ========================================================================= */}
-          {/* BLOQUE CENTRAL: Totalmente vacío para lucir la Esfera de Fondo o con vistas */}
+          {/* BLOQUE CENTRAL: Esfera holográfica 3D con osciloscopio de tiempo real */}
           {/* ========================================================================= */}
           <section className="flex-1 h-full flex flex-col justify-center items-center relative overflow-hidden">
+            {/* Reproductor holográfico activo cuando activeTab === "player" */}
+            {activeTab === "player" && (
+              <div 
+                className="relative flex items-center justify-center w-full h-full max-w-lg max-h-lg transition-transform duration-300 ease-out"
+                style={{
+                  transform: `scale(${1 + bassIntensity * 0.12})`
+                }}
+              >
+                {/* Estructura de la esfera holográfica 3D */}
+                <div className="absolute w-[320px] h-[320px] holographic-sphere-3d flex items-center justify-center pointer-events-none">
+                  {/* Anillos rotatorios Y */}
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(0deg)' }} />
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(30deg)' }} />
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(60deg)' }} />
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(90deg)' }} />
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(120deg)' }} />
+                  <div className="holographic-ring-y" style={{ transform: 'rotateY(150deg)' }} />
+
+                  {/* Anillos rotatorios X */}
+                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(0deg)' }} />
+                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(45deg)' }} />
+                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(90deg)' }} />
+                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(135deg)' }} />
+                </div>
+
+                {/* Canvas para el Osciloscopio en tiempo real */}
+                <canvas 
+                  ref={canvasRef} 
+                  width={480} 
+                  height={480} 
+                  className="relative z-10 w-[480px] h-[480px] pointer-events-none"
+                />
+
+                {/* Resplandor holográfico de fondo reactivo a los bajos */}
+                <div 
+                  className="absolute w-[220px] h-[220px] rounded-full bg-radial-gradient filter blur-2xl opacity-40 transition-all duration-300 pointer-events-none"
+                  style={{
+                    boxShadow: `0 0 ${40 + bassIntensity * 80}px rgba(255, 119, 0, ${0.2 + bassIntensity * 0.5})`,
+                    transform: `scale(${1 + bassIntensity * 0.2})`
+                  }}
+                />
+              </div>
+            )}
+
             {activeTab !== "player" && (
               /* Tarjeta de Cristal flotante para otras vistas que no sean el reproductor de la esfera */
               <div className="w-full h-full bg-[#0a0f16]/75 backdrop-blur-2xl border border-white/5 rounded-2xl p-6 shadow-2xl shadow-black/80 flex flex-col overflow-y-auto no-scrollbar relative z-10">

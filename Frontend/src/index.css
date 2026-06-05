@@ -266,3 +266,160 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(6, 182, 212, 0.4);
 }
+
+/* --- ESTILOS DE ALTA FIDELIDAD PARA LA OPCIÓN 2 (MOCKUP REAL) --- */
+
+/* Marco Holográfico Dual Glow de la dApp */
+.holographic-frame {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 50px rgba(0, 0, 0, 0.8),
+    inset 0 0 20px rgba(6, 182, 212, 0.05),
+    inset 0 0 20px rgba(249, 115, 22, 0.05);
+}
+
+.holographic-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(6, 182, 212, 0.05) 40%, rgba(249, 115, 22, 0.05) 60%, rgba(249, 115, 22, 0.3) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 10;
+}
+
+/* Efecto de rejilla de fondo cyberpunk sutil */
+.cyberpunk-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center;
+}
+
+/* Esfera Holográfica 3D Avanzada (Multicapa CSS/SVG) */
+@keyframes sphere-spin {
+  0% { transform: rotate3d(1, 1, 1, 0deg); }
+  100% { transform: rotate3d(1, 1, 1, 360deg); }
+}
+
+@keyframes sphere-spin-reverse {
+  0% { transform: rotate3d(1, -1, 1, 360deg); }
+  100% { transform: rotate3d(1, -1, 1, 0deg); }
+}
+
+.sphere-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.sphere-mesh-1 {
+  animation: sphere-spin 25s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.sphere-mesh-2 {
+  animation: sphere-spin-reverse 35s linear infinite;
+  transform-style: preserve-3d;
+}
+
+/* Cubo 3D de Neón (EARN ANC) */
+@keyframes cube-spin {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+}
+
+.cube-container {
+  perspective: 400px;
+  width: 40px;
+  height: 40px;
+}
+
+.cube-3d {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cube-spin 12s linear infinite;
+}
+
+.cube-face {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  background: rgba(249, 115, 22, 0.03);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
+}
+
+.face-front  { transform: translateZ(12px); }
+.face-back   { transform: rotateY(180deg) translateZ(12px); }
+.face-left   { transform: rotateY(-90deg) translateZ(12px); border-color: rgba(6, 182, 212, 0.5); background: rgba(6, 182, 212, 0.03); box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); }
+.face-right  { transform: rotateY(90deg) translateZ(12px); border-color: rgba(6, 182, 212, 0.5); background: rgba(6, 182, 212, 0.03); box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); }
+.face-top    { transform: rotateX(90deg) translateZ(12px); }
+.face-bottom { transform: rotateX(-90deg) translateZ(12px); }
+
+/* Barra de reproducción flotante súper translúcida (Mockup Player) */
+.glass-player-bar {
+  background: rgba(10, 10, 16, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Efecto de brillo interactivo al pasar por encima */
+.hover-neon-glow-cyan:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+
+.hover-neon-glow-orange:hover {
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+}
+
+/* --- ROTACIÓN 3D REAL PARA ESFERA HOLOGRÁFICA (OPCIÓN 2) --- */
+@keyframes orbital-spin-3d {
+  0% {
+    transform: rotateX(20deg) rotateY(0deg);
+  }
+  100% {
+    transform: rotateX(20deg) rotateY(360deg);
+  }
+}
+
+.holographic-sphere-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  animation: orbital-spin-3d 20s linear infinite;
+}
+
+.holographic-ring-y {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 180, 255, 0.25);
+  box-shadow: 0 0 15px rgba(0, 180, 255, 0.1), inset 0 0 15px rgba(0, 180, 255, 0.1);
+  transform-style: preserve-3d;
+}
+
+.holographic-ring-x {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 100, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 100, 0, 0.08), inset 0 0 15px rgba(255, 100, 0, 0.08);
+  transform-style: preserve-3d;
+  transform: rotateX(90deg);
+}
