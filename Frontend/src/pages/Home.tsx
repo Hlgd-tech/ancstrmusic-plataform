@@ -3,7 +3,8 @@ import {
   Play, Pause, SkipForward, SkipBack, Volume2, Volume, VolumeX, Music, 
   Upload, Disc, ArrowRight, ShieldCheck, 
   Coins, Sparkles, CheckCircle2, RefreshCw, AlertCircle, Loader2,
-  TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User, Image, MessageSquare
+  TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User, Image, MessageSquare,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,6 +141,7 @@ export default function Home() {
   // --- ESTADOS ---
   const [tracks, setTracks] = useState<Track[]>(INITIAL_TRACKS);
   const [activeTab, setActiveTab] = useState<string>("player");
+  const [isAncstrEraOpen, setIsAncstrEraOpen] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<string>("Todos");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentTrack, setCurrentTrack] = useState<Track>(INITIAL_TRACKS[0]);
@@ -1605,13 +1607,37 @@ export default function Home() {
           {/* ========================================================================= */}
           <section className="w-96 flex flex-col justify-between h-full bg-[#0a0f16]/60 backdrop-blur-xl border border-orange-500/30 rounded-2xl p-5 shadow-[0_0_30px_-5px_rgba(255,100,0,0.15)] overflow-y-auto no-scrollbar">
             
-            {/* ANCSTR ERA (Álbumes Destacados) */}
+            {/* ANCSTR ERA (Álbumes Destacados) - Colapsable Interactiva */}
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-xs font-mono text-orange-400 font-extrabold uppercase tracking-widest">ANCSTR ERA</span>
-                <button className="text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider">VIEW ALL →</button>
+              <div 
+                onClick={() => setIsAncstrEraOpen(!isAncstrEraOpen)}
+                className="flex justify-between items-center pb-2 border-b border-white/5 cursor-pointer select-none group/header"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-orange-400 font-extrabold uppercase tracking-widest group-hover/header:text-orange-300 transition-colors">ANCSTR ERA</span>
+                  <ChevronDown 
+                    className={`w-4 h-4 text-orange-400/70 group-hover/header:text-orange-400 transition-transform duration-500 ${
+                      isAncstrEraOpen ? "transform rotate-180" : ""
+                    }`} 
+                  />
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evitar que abra/cierre el acordeón al hacer clic en VIEW ALL
+                  }}
+                  className="text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider transition-colors"
+                >
+                  VIEW ALL →
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              
+              <div 
+                className={`grid grid-cols-2 gap-3 transition-all duration-500 ease-in-out overflow-hidden ${
+                  isAncstrEraOpen 
+                    ? "max-h-[1000px] opacity-100 mt-1" 
+                    : "max-h-0 opacity-0 pointer-events-none"
+                }`}
+              >
                 {[
                   { title: "The Genesis", vol: "Vol. 1", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_genesis-dA4XYwNQ6oCojnGnoNVWU7.webp" },
                   { title: "Cyber Echoes", vol: "Vol. 2", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_stable-ZkbAmoDjUkftQcV24apMRo.webp" },
