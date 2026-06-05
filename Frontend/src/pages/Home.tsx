@@ -1465,7 +1465,7 @@ export default function Home() {
             <CardContent className="pt-6 flex flex-col items-center">
                             {/* Arte de Portada - ESFERA HOLOGRÁFICA 3D CYBERPUNK (Opción 2) */}
               <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#0a0a0f]/80 border border-white/5 shadow-2xl shadow-black/80 mb-6 group flex items-center justify-center">
-                {currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated") ? (
+                {currentTrack.ipfs_cover_hash.includes("album_genesis") || currentTrack.ipfs_cover_hash.includes("album_stable") || currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated") || !currentTrack.ipfs_cover_hash ? (
                   /* Renderizamos la Esfera Holográfica 3D Interactiva de la Opción 2 */
                   <div className="relative w-full h-full flex items-center justify-center">
                     {/* Glow dual detrás de la esfera */}
