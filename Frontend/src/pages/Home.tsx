@@ -149,6 +149,8 @@ export default function Home() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [installSuccess, setInstallSuccess] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>("Todos");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentTrack, setCurrentTrack] = useState<Track>(INITIAL_TRACKS[0]);
@@ -315,8 +317,16 @@ export default function Home() {
     // 4. Capturar evento de instalación exitosa
     const handleAppInstalled = () => {
       console.log('¡ANCSTR dApp instalada con éxito!');
-      setShowInstallBanner(false);
+      setIsInstalling(false);
+      setInstallSuccess(true);
       setDeferredPrompt(null);
+      
+      // Cerrar el banner holográfico automáticamente después de 3.5 segundos de celebrar el éxito
+      setTimeout(() => {
+        setShowInstallBanner(false);
+        // Marcar como descartado para que no vuelva a molestar
+        sessionStorage.setItem('pwa-banner-dismissed', 'true');
+      }, 3500);
     };
 
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -1991,82 +2001,142 @@ export default function Home() {
       {/* BANNER HOLOGRÁFICO DE INSTALACIÓN PWA (Instalación Inteligente) */}
       {/* ========================================================================= */}
       {showInstallBanner && (
-        <div className="fixed bottom-32 left-8 z-50 w-80 bg-[#0a0f16]/90 backdrop-blur-2xl border border-orange-500/40 rounded-2xl p-4 shadow-[0_0_30px_rgba(255,100,0,0.25)] animate-fade-in transition-all duration-500">
-          {/* Cabecera del Banner */}
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
-                <Smartphone className="w-4.5 h-4.5 text-orange-400" />
+        <div className={`fixed bottom-32 left-8 z-50 w-80 bg-[#0a0f16]/90 backdrop-blur-2xl border rounded-2xl p-4 shadow-[0_0_30px_rgba(255,100,0,0.25)] transition-all duration-500 ${
+          installSuccess 
+            ? "border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] scale-102" 
+            : "border-orange-500/40 shadow-[0_0_30px_rgba(255,100,0,0.25)]"
+        }`}>
+          {installSuccess ? (
+            /* ========================================== */
+            /* PANTALLA DE ÉXITO (Conexión Establecida) */
+            /* ========================================== */
+            <div className="flex flex-col items-center justify-center py-4 text-center animate-fade-in font-mono">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-3 shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-pulse">
+                <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-mono text-orange-400 font-extrabold uppercase tracking-widest">PWA INSTALABLE</span>
-                <span className="text-xs font-bold text-slate-100 font-mono">Instalar ANCSTR MUSIC</span>
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                setShowInstallBanner(false);
-                sessionStorage.setItem('pwa-banner-dismissed', 'true');
-              }}
-              className="text-slate-400 hover:text-orange-400 transition-colors p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Cuerpo del Banner */}
-          <p className="text-[10px] text-slate-400 leading-relaxed mb-3 font-mono">
-            {isIOS 
-              ? "Instala la app en tu iPhone/iPad para escuchar música a pantalla completa, sin barras y con carga ultra rápida."
-              : "Instala nuestra aplicación nativa ligera en tu dispositivo para disfrutar de la experiencia holográfica completa sin barras de navegación."}
-          </p>
-
-          {/* Guía Visual Dinámica */}
-          {isIOS ? (
-            <div className="bg-[#03050a]/60 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1.5 font-mono text-[9px] text-slate-300">
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">1</span>
-                <span>Toca el botón de <strong className="text-orange-400">Compartir</strong> en Safari (abajo).</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">2</span>
-                <span>Selecciona <strong className="text-orange-400">"Añadir a pantalla de inicio"</strong>.</span>
-              </div>
+              <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest mb-1">CONEXIÓN ESTABLECIDA</span>
+              <span className="text-xs font-bold text-slate-100 mb-1">¡ANCSTR INSTALADO CON ÉXITO!</span>
+              <p className="text-[9px] text-slate-400 max-w-[220px] leading-relaxed">
+                Sincronización completa. Ahora puedes acceder desde tu pantalla de inicio en cualquier momento.
+              </p>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <Button
-                onClick={async () => {
-                  if (!deferredPrompt) {
-                    toast.error("La instalación no está disponible en este navegador actualmente.");
-                    return;
-                  }
-                  // Mostrar el prompt de instalación nativo
-                  deferredPrompt.prompt();
-                  // Esperar la respuesta del usuario
-                  const { outcome } = await deferredPrompt.userChoice;
-                  console.log(`Elección de instalación del usuario: ${outcome}`);
-                  // Limpiar el prompt guardado
-                  setDeferredPrompt(null);
-                  setShowInstallBanner(false);
-                }}
-                className="flex-1 bg-orange-600 hover:bg-orange-500 text-black font-bold font-mono text-[10px] h-9 rounded-xl border border-orange-500/30 shadow-[0_0_15px_rgba(255,100,0,0.4)] transition-all duration-300 flex items-center justify-center gap-1.5"
-              >
-                <Download className="w-3.5 h-3.5" />
-                INSTALAR AHORA
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowInstallBanner(false);
-                  sessionStorage.setItem('pwa-banner-dismissed', 'true');
-                  toast.info("Recordatorio pospuesto.");
-                }}
-                variant="outline"
-                className="bg-white/5 hover:bg-white/10 text-slate-300 font-bold font-mono text-[10px] h-9 px-3 rounded-xl border border-white/5"
-              >
-                Más tarde
-              </Button>
-            </div>
+            /* ========================================== */
+            /* PANTALLA ESTÁNDAR / GUÍA DE INSTALACIÓN */
+            /* ========================================== */
+            <>
+              {/* Cabecera del Banner */}
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
+                    {isInstalling ? (
+                      <Loader2 className="w-4.5 h-4.5 text-orange-400 animate-spin" />
+                    ) : (
+                      <Smartphone className="w-4.5 h-4.5 text-orange-400" />
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-mono text-orange-400 font-extrabold uppercase tracking-widest">
+                      {isInstalling ? "SINCRONIZANDO" : "PWA INSTALABLE"}
+                    </span>
+                    <span className="text-xs font-bold text-slate-100 font-mono">
+                      {isInstalling ? "Descargando Recursos..." : "Instalar ANCSTR MUSIC"}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setShowInstallBanner(false);
+                    sessionStorage.setItem('pwa-banner-dismissed', 'true');
+                  }}
+                  className="text-slate-400 hover:text-orange-400 transition-colors p-1"
+                  disabled={isInstalling}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Cuerpo del Banner */}
+              <p className="text-[10px] text-slate-400 leading-relaxed mb-3 font-mono">
+                {isInstalling
+                  ? "Estableciendo puente seguro de datos y almacenando en caché la interfaz holográfica para acceso ultra rápido offline..."
+                  : isIOS 
+                    ? "Instala la app en tu iPhone/iPad para escuchar música a pantalla completa, sin barras y con carga ultra rápida."
+                    : "Instala nuestra aplicación nativa ligera en tu dispositivo para disfrutar de la experiencia holográfica completa sin barras de navegación."}
+              </p>
+
+              {/* Guía Visual Dinámica */}
+              {isIOS ? (
+                <div className="bg-[#03050a]/60 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1.5 font-mono text-[9px] text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">1</span>
+                    <span>Toca el botón de <strong className="text-orange-400">Compartir</strong> en Safari (abajo).</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">2</span>
+                    <span>Selecciona <strong className="text-orange-400">"Añadir a pantalla de inicio"</strong>.</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={async () => {
+                      if (!deferredPrompt) {
+                        toast.error("La instalación no está disponible en este navegador actualmente.");
+                        return;
+                      }
+                      
+                      setIsInstalling(true);
+                      
+                      try {
+                        // Mostrar el prompt de instalación nativo
+                        deferredPrompt.prompt();
+                        // Esperar la respuesta del usuario
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`Elección de instalación del usuario: ${outcome}`);
+                        
+                        if (outcome === 'accepted') {
+                          toast.success("Sincronizando recursos...");
+                          // Nota: El evento appinstalled se disparará y manejará el éxito final
+                        } else {
+                          setIsInstalling(false);
+                          toast.error("Instalación rechazada por el usuario.");
+                        }
+                      } catch (err) {
+                        setIsInstalling(false);
+                        console.error("Error durante el prompt de instalación:", err);
+                      }
+                    }}
+                    disabled={isInstalling}
+                    className="flex-1 bg-orange-600 hover:bg-orange-500 text-black font-bold font-mono text-[10px] h-9 rounded-xl border border-orange-500/30 shadow-[0_0_15px_rgba(255,100,0,0.4)] transition-all duration-300 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isInstalling ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        SINCRONIZANDO...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5" />
+                        INSTALAR AHORA
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowInstallBanner(false);
+                      sessionStorage.setItem('pwa-banner-dismissed', 'true');
+                      toast.info("Recordatorio pospuesto.");
+                    }}
+                    variant="outline"
+                    disabled={isInstalling}
+                    className="bg-white/5 hover:bg-white/10 text-slate-300 font-bold font-mono text-[10px] h-9 px-3 rounded-xl border border-white/5 disabled:opacity-50"
+                  >
+                    Más tarde
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
