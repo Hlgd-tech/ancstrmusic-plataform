@@ -206,3 +206,33 @@
     animation: spin-vinyl 4s linear infinite;
   }
 }
+
+/* --- ESTILOS ADICIONALES PARA LA ESTÉTICA DARK PREMIUM & GLASSMORPHISM --- */
+
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% -20%, #1a1510 0%, #050507 70%);
+}
+
+/* Efecto de resplandor (Glow) sutil para el reproductor analógico */
+.analog-glow {
+  position: relative;
+}
+.analog-glow::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 2rem;
+  filter: blur(10px);
+}
+
+/* Transición suave para todos los componentes interactivos */
+.transition-premium {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

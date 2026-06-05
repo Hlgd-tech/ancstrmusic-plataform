@@ -1208,7 +1208,7 @@ export default function Home() {
 
             {/* TAB: PUBLICAR (ARTISTA) */}
             <TabsContent value="upload" className="mt-0 outline-none">
-              <Card className="bg-zinc-950 border-zinc-900">
+              <Card className="bg-[#0c0c0f]/40 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/60 rounded-2xl hover:border-white/10 transition-all duration-500">
                 <CardHeader>
                   <CardTitle className="text-sm font-bold text-white tracking-wider uppercase flex items-center gap-2">
                     <Upload className="w-4 h-4 text-orange-500" /> Publicar Nueva Licencia Digital
@@ -1576,7 +1576,7 @@ export default function Home() {
           </Card>
 
           {/* MÓDULO SOCIAL DE ARTISTA & PROPINAS */}
-          <Card className="bg-zinc-950 border-zinc-900 overflow-hidden">
+          <Card className="bg-[#0c0c0f]/40 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/60 rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-500">
             <CardHeader className="border-b border-zinc-900 pb-4">
               <CardTitle className="text-xs font-bold text-white tracking-wider uppercase flex items-center gap-2">
                 <User className="w-4 h-4 text-orange-500" /> Perfil de Artista & Soporte
