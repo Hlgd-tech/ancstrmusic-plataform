@@ -4,7 +4,7 @@ import {
   Upload, Disc, ArrowRight, ShieldCheck, 
   Coins, Sparkles, CheckCircle2, RefreshCw, AlertCircle, Loader2,
   TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User, Image, MessageSquare,
-  ChevronDown
+  ChevronDown, Download, X, Smartphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -144,6 +144,11 @@ export default function Home() {
   const [isAncstrEraOpen, setIsAncstrEraOpen] = useState(true);
   const [isUpNextOpen, setIsUpNextOpen] = useState(true);
   const [isEarnAncOpen, setIsEarnAncOpen] = useState(true);
+
+  // --- ESTADOS PWA ---
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>("Todos");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentTrack, setCurrentTrack] = useState<Track>(INITIAL_TRACKS[0]);
@@ -266,6 +271,62 @@ export default function Home() {
   };
 
   // --- EFECTOS ---
+  // Detección de PWA e Instalación
+  useEffect(() => {
+    // 1. Detectar si ya está instalada (en modo standalone)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+      || (window.navigator as any).standalone 
+      || document.referrer.includes('android-app://');
+
+    if (isStandalone) {
+      console.log("La dApp ya se está ejecutando en modo standalone (instalada).");
+      return;
+    }
+
+    // 2. Detectar si es iOS (Safari)
+    const ua = window.navigator.userAgent;
+    const isAppleIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+    const isSafari = /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua);
+    
+    if (isAppleIOS) {
+      setIsIOS(true);
+      // Mostrar banner de iOS si no se ha cerrado en esta sesión
+      const dismissed = sessionStorage.getItem('pwa-banner-dismissed');
+      if (!dismissed) {
+        // Retrasar la aparición del banner holográfico para una experiencia no intrusiva
+        const timer = setTimeout(() => setShowInstallBanner(true), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+
+    // 3. Capturar el evento beforeinstallprompt (Android / Escritorio Chrome/Edge)
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      
+      const dismissed = sessionStorage.getItem('pwa-banner-dismissed');
+      if (!dismissed) {
+        setTimeout(() => setShowInstallBanner(true), 3000);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // 4. Capturar evento de instalación exitosa
+    const handleAppInstalled = () => {
+      console.log('¡ANCSTR dApp instalada con éxito!');
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
   // Obtener saldo real de Solana al conectar wallet
   useEffect(() => {
     if (connected && publicKey) {
@@ -1925,6 +1986,90 @@ export default function Home() {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleAudioEnded}
       />
+
+      {/* ========================================================================= */}
+      {/* BANNER HOLOGRÁFICO DE INSTALACIÓN PWA (Instalación Inteligente) */}
+      {/* ========================================================================= */}
+      {showInstallBanner && (
+        <div className="fixed bottom-32 left-8 z-50 w-80 bg-[#0a0f16]/90 backdrop-blur-2xl border border-orange-500/40 rounded-2xl p-4 shadow-[0_0_30px_rgba(255,100,0,0.25)] animate-fade-in transition-all duration-500">
+          {/* Cabecera del Banner */}
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
+                <Smartphone className="w-4.5 h-4.5 text-orange-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-mono text-orange-400 font-extrabold uppercase tracking-widest">PWA INSTALABLE</span>
+                <span className="text-xs font-bold text-slate-100 font-mono">Instalar ANCSTR MUSIC</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                setShowInstallBanner(false);
+                sessionStorage.setItem('pwa-banner-dismissed', 'true');
+              }}
+              className="text-slate-400 hover:text-orange-400 transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Cuerpo del Banner */}
+          <p className="text-[10px] text-slate-400 leading-relaxed mb-3 font-mono">
+            {isIOS 
+              ? "Instala la app en tu iPhone/iPad para escuchar música a pantalla completa, sin barras y con carga ultra rápida."
+              : "Instala nuestra aplicación nativa ligera en tu dispositivo para disfrutar de la experiencia holográfica completa sin barras de navegación."}
+          </p>
+
+          {/* Guía Visual Dinámica */}
+          {isIOS ? (
+            <div className="bg-[#03050a]/60 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1.5 font-mono text-[9px] text-slate-300">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">1</span>
+                <span>Toca el botón de <strong className="text-orange-400">Compartir</strong> en Safari (abajo).</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">2</span>
+                <span>Selecciona <strong className="text-orange-400">"Añadir a pantalla de inicio"</strong>.</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                onClick={async () => {
+                  if (!deferredPrompt) {
+                    toast.error("La instalación no está disponible en este navegador actualmente.");
+                    return;
+                  }
+                  // Mostrar el prompt de instalación nativo
+                  deferredPrompt.prompt();
+                  // Esperar la respuesta del usuario
+                  const { outcome } = await deferredPrompt.userChoice;
+                  console.log(`Elección de instalación del usuario: ${outcome}`);
+                  // Limpiar el prompt guardado
+                  setDeferredPrompt(null);
+                  setShowInstallBanner(false);
+                }}
+                className="flex-1 bg-orange-600 hover:bg-orange-500 text-black font-bold font-mono text-[10px] h-9 rounded-xl border border-orange-500/30 shadow-[0_0_15px_rgba(255,100,0,0.4)] transition-all duration-300 flex items-center justify-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                INSTALAR AHORA
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowInstallBanner(false);
+                  sessionStorage.setItem('pwa-banner-dismissed', 'true');
+                  toast.info("Recordatorio pospuesto.");
+                }}
+                variant="outline"
+                className="bg-white/5 hover:bg-white/10 text-slate-300 font-bold font-mono text-[10px] h-9 px-3 rounded-xl border border-white/5"
+              >
+                Más tarde
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
