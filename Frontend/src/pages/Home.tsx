@@ -499,7 +499,7 @@ export default function Home() {
             canvasCtx.clearRect(0, 0, width, height);
             
             // Simular datos de forma de onda usando funciones trigonométricas en fallback
-            const simulatedTimeData = [];
+            const simulatedTimeData: number[] = [];
             const time = Date.now() * 0.005;
             
             for (let i = 0; i < 256; i++) {
