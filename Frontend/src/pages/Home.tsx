@@ -1627,7 +1627,11 @@ export default function Home() {
                   onClick={(e) => {
                     e.stopPropagation(); // Evitar que abra/cierre el acordeón al hacer clic en VIEW ALL
                   }}
-                  className="text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider transition-colors"
+                  className={`text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider transition-all duration-500 ${
+                    isAncstrEraOpen 
+                      ? "opacity-100 translate-x-0" 
+                      : "opacity-0 translate-x-4 pointer-events-none"
+                  }`}
                 >
                   VIEW ALL →
                 </button>
@@ -1679,7 +1683,14 @@ export default function Home() {
                     }`} 
                   />
                 </div>
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <div 
+                  className={`flex items-center gap-2 transition-all duration-500 ${
+                    isUpNextOpen 
+                      ? "opacity-100 translate-x-0" 
+                      : "opacity-0 translate-x-4 pointer-events-none"
+                  }`} 
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <span className="text-[9px] font-mono text-slate-400 uppercase">AUTOPLAY</span>
                   <button className="w-7 h-4 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center p-0.5 cursor-pointer">
                     <div className="w-2.5 h-2.5 rounded-full bg-orange-500 translate-x-3 transition-transform duration-300 shadow-[0_0_8px_#ff7700]" />
