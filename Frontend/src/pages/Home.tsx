@@ -1466,62 +1466,133 @@ export default function Home() {
                             {/* Arte de Portada - ESFERA HOLOGRÁFICA 3D CYBERPUNK (Opción 2) */}
               <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#0a0a0f]/80 border border-white/5 shadow-2xl shadow-black/80 mb-6 group flex items-center justify-center">
                 {currentTrack.ipfs_cover_hash.includes("album_genesis") || currentTrack.ipfs_cover_hash.includes("album_stable") || currentTrack.ipfs_cover_hash.includes("album_history") || currentTrack.ipfs_cover_hash.includes("QmSimulated") || !currentTrack.ipfs_cover_hash ? (
-                  /* Renderizamos la Esfera Holográfica 3D Interactiva de la Opción 2 */
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    {/* Glow dual detrás de la esfera */}
-                    <div className="absolute w-4/5 h-4/5 rounded-full bg-gradient-to-tr from-cyan-500/10 to-orange-500/10 blur-3xl animate-pulse" />
-                    
-                    {/* Estructura orbital de la esfera */}
-                    <div className={`relative w-4/5 h-4/5 rounded-full border border-white/5 flex items-center justify-center transition-all duration-1000 ${isPlaying ? 'animate-[spin_20s_linear_infinite]' : ''}`}>
-                      {/* Anillo exterior de partículas */}
-                      <div className="absolute inset-2 rounded-full border border-dashed border-cyan-500/20 animate-[spin_12s_linear_infinite]" />
-                      {/* Anillo interior */}
-                      <div className="absolute inset-8 rounded-full border border-dashed border-orange-500/20 animate-[spin_8s_linear_infinite_reverse]" />
-                      
-                      {/* Ondas de sonido holográficas esféricas */}
-                      <svg className="w-3/4 h-3/5 absolute text-cyan-400 opacity-80" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="0.25" strokeDasharray="1 4" className="opacity-40" />
-                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.25" strokeDasharray="1 3" className="opacity-30" />
-                        
-                        {/* Onda sinusoidal interactiva 1 (Azul Cyber) */}
-                        <path
-                          d="M 10,50 Q 25,25 40,50 T 70,50 T 90,50"
-                          fill="none"
-                          stroke="url(#cyber-grad-1)"
-                          strokeWidth="1.2"
-                          className={isPlaying ? 'animate-[pulse_1.5s_ease-in-out_infinite]' : ''}
-                        />
-                        {/* Onda sinusoidal interactiva 2 (Naranja Cyber) */}
-                        <path
-                          d="M 10,50 Q 25,75 40,50 T 70,50 T 90,50"
-                          fill="none"
-                          stroke="url(#cyber-grad-2)"
-                          strokeWidth="0.8"
-                          className={isPlaying ? 'animate-[pulse_2s_ease-in-out_infinite_reverse]' : ''}
-                        />
-                        <defs>
-                          <linearGradient id="cyber-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#06b6d4" />
-                            <stop offset="100%" stopColor="#f97316" />
-                          </linearGradient>
-                          <linearGradient id="cyber-grad-2" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
-                            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.4" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
+                  /* Renderizamos la Esfera Holográfica 3D Interactiva de la Opción 2 con CSS 3D */
+                  <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-[#06060a]/95 rounded-2xl p-6">
+                    {/* Partículas cósmicas flotantes de fondo */}
+                    <div className="absolute inset-0 opacity-40 pointer-events-none">
+                      <div className="absolute w-1 h-1 bg-cyan-400 rounded-full top-1/4 left-1/4 animate-ping" style={{ animationDuration: '3s' }} />
+                      <div className="absolute w-1.5 h-1.5 bg-orange-400 rounded-full top-1/3 right-1/4 animate-ping" style={{ animationDuration: '4s' }} />
+                      <div className="absolute w-0.5 h-0.5 bg-white rounded-full bottom-1/4 left-1/3 animate-pulse" />
+                      <div className="absolute w-1 h-1 bg-cyan-300 rounded-full bottom-1/3 right-1/3 animate-pulse" />
+                      <div className="absolute w-1.5 h-1.5 bg-orange-300 rounded-full top-10 right-10 animate-pulse" style={{ animationDuration: '5s' }} />
+                      <div className="absolute w-0.5 h-0.5 bg-white rounded-full bottom-10 left-10 animate-pulse" style={{ animationDuration: '6s' }} />
+                    </div>
 
-                      {/* Núcleo holográfico central */}
-                      <div className={`w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-orange-500 opacity-10 blur-xl transition-all duration-500 ${isPlaying ? 'scale-125 opacity-25' : 'scale-100'}`} />
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-orange-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                        <div className="w-4 h-4 rounded-full bg-white animate-ping" />
+                    {/* Glow dual de fondo (Azul a la izquierda, Naranja a la derecha) */}
+                    <div className="absolute w-4/5 h-4/5 rounded-full bg-gradient-to-tr from-cyan-500/10 to-orange-500/10 blur-[60px] animate-pulse pointer-events-none" />
+
+                    {/* Contenedor de la Esfera 3D */}
+                    <div className="relative w-60 h-64 flex flex-col items-center justify-center">
+                      
+                      {/* Base holográfica elíptica brillante (Pedestal de luz) */}
+                      <div className="absolute bottom-6 w-44 h-4 bg-gradient-to-r from-cyan-500/30 to-orange-500/30 rounded-full blur-sm border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.3)] transform rotateX-60" />
+                      <div className="absolute bottom-7 w-36 h-3 bg-gradient-to-r from-cyan-400/40 to-orange-400/40 rounded-full blur-md transform rotateX-60 animate-pulse" />
+                      
+                      {/* Esfera 3D de Mallas Cruzadas (Efecto Holograma Real) */}
+                      <div className={`relative w-44 h-44 rounded-full flex items-center justify-center transition-all duration-1000 ${isPlaying ? 'animate-[spin_25s_linear_infinite]' : ''}`} style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}>
+                        
+                        {/* Anillo de Latitud Horizontal */}
+                        <div className="absolute w-full h-full rounded-full border border-cyan-500/30 transform rotateX-75 animate-pulse" />
+                        
+                        {/* Anillo de Longitud Vertical 1 */}
+                        <div className="absolute w-full h-full rounded-full border border-orange-500/30 transform rotateY-75 animate-pulse" style={{ animationDelay: '1s' }} />
+                        
+                        {/* Anillo de Longitud Vertical 2 */}
+                        <div className="absolute w-full h-full rounded-full border border-cyan-500/15 transform rotateY-45" />
+                        
+                        {/* Anillo de Longitud Vertical 3 */}
+                        <div className="absolute w-full h-full rounded-full border border-orange-500/15 transform rotateY-135" />
+
+                        {/* Anillo exterior de partículas y marcas de datos */}
+                        <div className="absolute w-[112%] h-[110%] rounded-full border border-dashed border-cyan-500/10 animate-[spin_40s_linear_infinite]" />
+                        <div className="absolute w-[106%] h-[106%] rounded-full border border-dashed border-orange-500/10 animate-[spin_20s_linear_infinite_reverse]" />
+
+                        {/* Ondas de espectro de audio esféricas (SVG de alta definición) */}
+                        <svg className="w-full h-full absolute opacity-90 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" viewBox="0 0 100 100">
+                          {/* Malla de círculos concéntricos que dan volumen */}
+                          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#cyber-grad-1)" strokeWidth="0.25" strokeDasharray="1 3" className="opacity-30" />
+                          <circle cx="50" cy="50" r="35" fill="none" stroke="url(#cyber-grad-2)" strokeWidth="0.25" strokeDasharray="1 4" className="opacity-40" />
+                          <circle cx="50" cy="50" r="25" fill="none" stroke="url(#cyber-grad-1)" strokeWidth="0.2" strokeDasharray="1 2" className="opacity-20" />
+                          
+                          {/* Onda de sonido central Azul (Frecuencias bajas) */}
+                          <path
+                            d="M 10,50 C 25,20 35,80 50,50 C 65,20 75,80 90,50"
+                            fill="none"
+                            stroke="url(#cyber-grad-1)"
+                            strokeWidth="1.5"
+                            className={isPlaying ? 'animate-[pulse_1.2s_ease-in-out_infinite]' : 'opacity-60'}
+                          />
+                          
+                          {/* Onda de sonido central Naranja (Frecuencias altas) */}
+                          <path
+                            d="M 10,50 C 20,75 40,25 50,50 C 60,75 80,25 90,50"
+                            fill="none"
+                            stroke="url(#cyber-grad-2)"
+                            strokeWidth="1.0"
+                            className={isPlaying ? 'animate-[pulse_1.8s_ease-in-out_infinite_reverse]' : 'opacity-40'}
+                          />
+
+                          {/* Espectro de audio circular estático pero reactivo */}
+                          <g className="opacity-50">
+                            {[...Array(24)].map((_, i) => {
+                              const angle = (i * 360) / 24;
+                              const rad = (angle * Math.PI) / 180;
+                              const r1 = 38;
+                              const r2 = isPlaying ? 38 + (i % 3 === 0 ? 8 : i % 2 === 0 ? 5 : 3) : 40;
+                              const x1 = 50 + r1 * Math.cos(rad);
+                              const y1 = 50 + r1 * Math.sin(rad);
+                              const x2 = 50 + r2 * Math.cos(rad);
+                              const y2 = 50 + r2 * Math.sin(rad);
+                              return (
+                                <line
+                                  key={i}
+                                  x1={x1}
+                                  y1={y1}
+                                  x2={x2}
+                                  y2={y2}
+                                  stroke={angle > 180 ? '#f97316' : '#06b6d4'}
+                                  strokeWidth="0.5"
+                                  className={isPlaying ? 'animate-pulse' : ''}
+                                  style={{ animationDelay: `${i * 0.05}s` }}
+                                />
+                              );
+                            })}
+                          </g>
+
+                          <defs>
+                            <linearGradient id="cyber-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#06b6d4" />
+                              <stop offset="50%" stopColor="#3b82f6" />
+                              <stop offset="100%" stopColor="#f97316" />
+                            </linearGradient>
+                            <linearGradient id="cyber-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#f97316" />
+                              <stop offset="50%" stopColor="#ec4899" />
+                              <stop offset="100%" stopColor="#06b6d4" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+
+                        {/* Núcleo de energía de la Esfera */}
+                        <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-orange-500 opacity-20 blur-xl transition-all duration-500 ${isPlaying ? 'scale-125 opacity-40' : 'scale-100'}`} />
+                        <div className="absolute w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-orange-400 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.6)]">
+                          <div className="w-3 h-3 rounded-full bg-white animate-ping" />
+                        </div>
+
                       </div>
                     </div>
-                    
-                    
-                    {/* Pequeños puntos flotantes */}
-                    <div className="absolute top-8 left-16 w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
-                    <div className="absolute bottom-10 right-16 w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse [animation-delay:0.7s]" />
+
+                    {/* Panel de datos de la pista actual estilo Holograma */}
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between px-3 py-2 bg-white/5 border border-white/5 rounded-xl backdrop-blur-md">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-mono text-cyan-400 uppercase tracking-wider">AUDIO SPECTRUM</span>
+                        <span className="text-xs font-semibold text-white truncate max-w-[120px]">{currentTrack.title}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full bg-cyan-400 ${isPlaying ? 'animate-ping' : ''}`} />
+                        <span className="text-[9px] font-mono text-zinc-400">320 KBPS</span>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   /* Si es una portada personalizada, la mostramos con forma de vinilo giratorio */
