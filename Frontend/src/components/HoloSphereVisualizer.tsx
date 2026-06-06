@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 interface HoloSphereVisualizerProps {
@@ -410,13 +410,17 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
           bassIntensity={bassIntensity}
         />
         
-        {/* Post-procesamiento con Bloom fotorrealista de neón */}
+        {/* Post-procesamiento con Bloom fotorrealista de neón y grano analógico */}
         <EffectComposer>
           <Bloom 
             mipmapBlur={true}
             intensity={0.75} 
             luminanceThreshold={0.35} // Incrementamos el umbral para evitar que el brillo aditivo se queme a blanco puro
             luminanceSmoothing={0.85} 
+          />
+          <Noise 
+            premultiply 
+            opacity={0.05} // Opacidad calibrada y sutil para un grano fino y elegante estilo holograma
           />
         </EffectComposer>
       </Canvas>
