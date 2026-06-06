@@ -1246,20 +1246,23 @@ export default function Home() {
   const trendingTracks = [...tracks].sort((a, b) => b.sales_count - a.sales_count);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#03050a] text-slate-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400 relative">
+    <div className="h-screen w-screen overflow-hidden bg-[#030508] text-slate-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400 relative">
       
-      {/* 1. LIENZO GENERAL: Imagen de fondo fotorrealista de la esfera holográfica (Atenuada para dar protagonismo a la esfera WebGL 3D interactiva real) */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 opacity-15 pointer-events-none"
-        style={{ backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/bg-sphere-htnXnoD48w6JjPXumRtzJZ.webp')` }}
-      />
+      {/* 1. LIENZO GENERAL: Visualizador WebGL 3D como Fondo Interactivo Absoluto de Pantalla Completa */}
+      <div className="fixed inset-0 w-screen h-screen -z-10 pointer-events-none overflow-hidden bg-transparent">
+        <HoloSphereVisualizer 
+          analyserNode={analyserRef.current}
+          isPlaying={isPlaying}
+          bassIntensity={bassIntensity}
+        />
+      </div>
       
       {/* Rejilla holográfica de fondo */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,24,38,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(18,24,38,0.1)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,24,38,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(18,24,38,0.15)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none -z-10" />
       
-      {/* Orbes de iluminación dual asimétrica de fondo */}
-      <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none z-0" />
+      {/* Orbes de iluminación dual asimétrica de fondo para potenciar el efecto Glassmorphism */}
+      <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none -z-10" />
 
       {/* 2. CONTENEDOR PRINCIPAL FLOTANTE DE PANTALLA COMPLETA */}
       <div className="relative z-10 flex flex-col h-full w-full justify-between p-6">
@@ -1372,36 +1375,23 @@ export default function Home() {
           </section>
 
           {/* ========================================================================= */}
-          {/* BLOQUE CENTRAL: Esfera holográfica 3D con osciloscopio de tiempo real */}
+          {/* BLOQUE CENTRAL: Espacio central interactivo que revela el fondo WebGL 3D a pantalla completa */}
           {/* ========================================================================= */}
           <section className="flex-1 h-full flex flex-col justify-center items-center relative overflow-hidden">
-            {/* Reproductor holográfico activo cuando activeTab === "player" o "ancstr_era" */}
+            {/* Espacio vacío interactivo que reacciona a los bajos cuando la pestaña es el reproductor */}
             {(activeTab === "player" || activeTab === "ancstr_era") && (
               <div 
-                className="relative flex items-center justify-center w-full h-full max-w-3xl max-h-[600px] md:max-h-[650px] transition-all duration-500 ease-in-out"
+                className="relative flex items-center justify-center w-full h-full max-w-3xl max-h-[600px] md:max-h-[650px] transition-all duration-500 ease-in-out pointer-events-none"
                 style={{
-                  transform: `scale(${1 + bassIntensity * 0.08})`
+                  transform: `scale(${1 + bassIntensity * 0.05})`
                 }}
               >
-                {/* Visualizador Holográfico de WebGL 3D (R3F + Shaders + Bloom) */}
-                <div className={`relative z-10 transition-all duration-500 ease-in-out ${
-                  isRightPanelOpen 
-                    ? "w-[480px] h-[480px]" 
-                    : "w-[650px] h-[650px] max-w-full max-h-full"
-                }`}>
-                  <HoloSphereVisualizer 
-                    analyserNode={analyserRef.current}
-                    isPlaying={isPlaying}
-                    bassIntensity={bassIntensity}
-                  />
-                </div>
-
-                {/* Resplandor holográfico de fondo reactivo a los bajos */}
+                {/* Resplandor holográfico de fondo reactivo a los bajos para enfatizar la presencia del planeta 3D de fondo */}
                 <div 
-                  className="absolute w-[250px] h-[250px] rounded-full bg-radial-gradient filter blur-3xl opacity-30 transition-all duration-300 pointer-events-none"
+                  className="absolute w-[350px] h-[350px] rounded-full filter blur-[100px] opacity-25 transition-all duration-300 pointer-events-none"
                   style={{
-                    boxShadow: `0 0 ${60 + bassIntensity * 120}px rgba(255, 119, 0, ${0.15 + bassIntensity * 0.6})`,
-                    transform: `scale(${1 + bassIntensity * 0.25})`
+                    boxShadow: `0 0 ${100 + bassIntensity * 150}px rgba(255, 119, 0, ${0.2 + bassIntensity * 0.5})`,
+                    transform: `scale(${1 + bassIntensity * 0.15})`
                   }}
                 />
               </div>
