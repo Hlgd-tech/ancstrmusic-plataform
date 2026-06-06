@@ -1858,32 +1858,47 @@ export default function Home() {
                   return (
                     <div 
                       key={idx}
-                      className="bg-[#0a0f16]/40 border border-white/5 rounded-xl p-2 flex flex-col gap-2 group transition-all duration-300 cursor-pointer"
+                      className="bg-[#0a0f16]/40 border border-white/5 rounded-xl p-2 flex flex-col gap-2 group transition-all duration-300 cursor-pointer relative"
                     >
-                      {/* El Contenedor de Luz (Bordes Neón Alternos) */}
-                      <div className={`aspect-square relative ${
+                      {/* 1. Haz de Luz de Proyección Cónica (Simula el Proyector del Holograma desde la base) */}
+                      <div 
+                        className={`absolute bottom-[40px] left-1/2 -translate-x-1/2 w-[120%] h-[150%] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0`}
+                        style={{
+                          background: isCyan 
+                            ? "linear-gradient(to top, rgba(0, 255, 255, 0.12) 0%, rgba(0, 255, 255, 0.03) 50%, rgba(0, 255, 255, 0) 100%)"
+                            : "linear-gradient(to top, rgba(255, 100, 0, 0.12) 0%, rgba(255, 100, 0, 0.03) 50%, rgba(255, 100, 0, 0) 100%)",
+                          clipPath: "polygon(15% 100%, 85% 100%, 100% 0%, 0% 0%)"
+                        }}
+                      />
+
+                      {/* El Contenedor de Luz (Bordes Neón Alternos) + Animación de Parpadeo en Carga */}
+                      <div className={`aspect-square relative z-10 animate-hologram-flicker ${
                         isCyan 
                           ? "relative overflow-hidden rounded-lg border-2 border-cyan-500/80 shadow-[0_0_15px_rgba(0,255,255,0.5)]" 
                           : "relative overflow-hidden rounded-lg border-2 border-orange-500/80 shadow-[0_0_15px_rgba(255,100,0,0.5)]"
                       }`}>
-                        {/* Tratamiento Base de la Imagen */}
-                        <img 
-                          src={album.img} 
-                          alt={album.title} 
-                          className="w-full h-full object-cover opacity-80 contrast-[1.2] saturate-50 mix-blend-screen group-hover:scale-105 transition-transform duration-500" 
-                        />
                         
-                        {/* Líneas de Holograma (Scanlines - EL EFECTO CLAVE) */}
-                        {isCyan ? (
-                          <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(0,255,255,0.15)_3px,rgba(0,255,255,0.15)_4px)]"></div>
-                        ) : (
-                          <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(255,100,0,0.15)_3px,rgba(255,100,0,0.15)_4px)]"></div>
-                        )}
-                        
-                        {/* Tinte Emisivo */}
-                        <div className={`absolute inset-0 mix-blend-color pointer-events-none ${
-                          isCyan ? "bg-cyan-500/30" : "bg-orange-500/30"
-                        }`}></div>
+                        {/* 2. Capa Glitch de Interferencia (Solo se activa con hover sobre la tarjeta) */}
+                        <div className="w-full h-full absolute inset-0 z-0 animate-hologram-glitch">
+                          {/* Tratamiento Base de la Imagen */}
+                          <img 
+                            src={album.img} 
+                            alt={album.title} 
+                            className="w-full h-full object-cover opacity-80 contrast-[1.2] saturate-50 mix-blend-screen group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          
+                          {/* Líneas de Holograma (Scanlines - EL EFECTO CLAVE) */}
+                          {isCyan ? (
+                            <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(0,255,255,0.15)_3px,rgba(0,255,255,0.15)_4px)]"></div>
+                          ) : (
+                            <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(255,100,0,0.15)_3px,rgba(255,100,0,0.15)_4px)]"></div>
+                          )}
+                          
+                          {/* Tinte Emisivo */}
+                          <div className={`absolute inset-0 mix-blend-color pointer-events-none ${
+                            isCyan ? "bg-cyan-500/30" : "bg-orange-500/30"
+                          }`}></div>
+                        </div>
                         
                         {/* Overlay de Hover para Play */}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
@@ -1891,7 +1906,7 @@ export default function Home() {
                         </div>
                       </div>
                       
-                      <div className="flex flex-col min-w-0 px-1">
+                      <div className="flex flex-col min-w-0 px-1 z-10">
                         <span className={`text-[10px] font-bold font-mono truncate transition-colors duration-300 ${
                           isCyan ? "group-hover:text-cyan-400" : "group-hover:text-orange-400"
                         }`}>{album.title}</span>
