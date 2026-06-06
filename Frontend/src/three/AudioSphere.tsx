@@ -5,6 +5,7 @@ import * as THREE from 'three';
 interface AudioSphereProps {
   isPlaying: boolean;
   progress: number;
+  analyserNode?: AnalyserNode | null;
 }
 
 const SPHERE_RADIUS = 1.6;
@@ -20,7 +21,7 @@ const BAR_ENVELOPE = Array.from({ length: BAR_COUNT }, (_, i) => {
   );
 });
 
-export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
+export default function AudioSphere({ isPlaying, progress, analyserNode }: AudioSphereProps) {
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const barsRef = useRef<THREE.InstancedMesh>(null);
@@ -94,8 +95,8 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
     const playing = isPlayingRef.current;
     const prog = progressRef.current;
 
-    // Recuperar el AnalyserNode global
-    const analyser = (window as any).__AUDIO_ANALYSER__;
+    // Recuperar el AnalyserNode de la prop o el global como fallback
+    const analyser = analyserNode || (window as any).__AUDIO_ANALYSER__;
     let bass = 0;
     let mid = 0;
 
@@ -140,7 +141,8 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
     const bassEnergy = bassEnergyRef.current;
 
     // Física de Erupción: la esfera estalla y pulsa dinámicamente con los graves (Bass)
-    const eruptionScale = 1.0 + (playing ? bassEnergy * 0.45 : 0);
+    const bassMultiplier = playing ? bassEnergy * 0.55 : 0;
+    const eruptionScale = 1.0 + bassMultiplier;
     if (groupRef.current) {
       groupRef.current.scale.set(eruptionScale, eruptionScale, eruptionScale);
       // Rotación acelerada dinámicamente según la energía general y el bombo
@@ -164,12 +166,14 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
         dummy.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
         dummy.rotation.y = -angle;
 
-        // Waveform height: base envelope + wave driven by progress + energy
+        // Waveform height: base envelope + wave driven by progress + energy (reactiva drásticamente al Bass)
         const distFromHead = Math.abs(i - playheadBar);
         const nearBoost = Math.max(0, 1 - distFromHead / 6);
         const wavePhase = prog * Math.PI * 24;
         const wave = (Math.sin(t * 5 + i * 0.55 + wavePhase) * 0.5 + 0.5);
-        const h = Math.max(0.008, (BAR_ENVELOPE[i] + wave * 0.35 + nearBoost * 0.5) * energy * 0.75);
+        // Usamos el multiplicador de energía de bajos para alterar drásticamente la altura de las barras
+        const bassBoost = playing ? bassEnergy * 1.8 : 0.05;
+        const h = Math.max(0.008, (BAR_ENVELOPE[i] + wave * 0.35 + nearBoost * 0.5) * (energy * 0.4 + bassBoost) * 1.1);
 
         dummy.scale.set(0.02, h, 0.02);
         dummy.updateMatrix();
@@ -183,7 +187,7 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
       if (barsRef.current.instanceColor) barsRef.current.instanceColor.needsUpdate = true;
     }
 
-    // Animate holo rings
+    // Animate holo rings (reubicados y girando lentamente en direcciones opuestas)
     const ringRefs = [ring1Ref, ring2Ref, ring3Ref];
     ringRefs.forEach((ref, i) => {
       if (!ref.current) return;
@@ -196,6 +200,10 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
       // Escala reactiva al ritmo
       const scl = 1 + pulse * 0.015 * energy + (playing ? bass * 0.04 : 0);
       ref.current.scale.set(scl, scl, scl);
+
+      // Rotación continua lenta en direcciones opuestas para efecto de maquinaria futurista
+      const dir = i % 2 === 0 ? 1 : -1;
+      ref.current.rotation.z += delta * 0.15 * dir;
     });
   });
 
@@ -218,21 +226,21 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
         />
       </points>
 
-      {/* Waveform bar ring */}
+      {/* Waveform bar ring (sin vertexColors y con toneMapped={false} para Bloom emisivo puro) */}
       <instancedMesh ref={barsRef} args={[undefined, undefined, BAR_COUNT]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial
-          vertexColors
           transparent
           opacity={1}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
+          toneMapped={false}
         />
       </instancedMesh>
 
-      {/* Holographic ground rings - Iluminados con materiales emisivos intensos */}
-      <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -1.55, 0]}>
-        <torusGeometry args={[1.85, 0.015, 16, 128]} />
+      {/* Holographic ground rings - Reubicados para evitar colisión y expandidos en radio */}
+      <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -2.0, 0]}>
+        <torusGeometry args={[2.2, 0.015, 16, 128]} />
         <meshStandardMaterial
           color="#00eeff"
           emissive="#0088ff"
@@ -245,8 +253,8 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -1.65, 0]}>
-        <torusGeometry args={[2.2, 0.012, 16, 128]} />
+      <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -2.15, 0]}>
+        <torusGeometry args={[2.6, 0.012, 16, 128]} />
         <meshStandardMaterial
           color="#ff5500"
           emissive="#ff2200"
@@ -259,8 +267,8 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -1.75, 0]}>
-        <torusGeometry args={[2.55, 0.008, 16, 128]} />
+      <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -2.3, 0]}>
+        <torusGeometry args={[3.0, 0.008, 16, 128]} />
         <meshStandardMaterial
           color="#00eeff"
           emissive="#0088ff"

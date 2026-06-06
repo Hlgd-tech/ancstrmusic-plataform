@@ -20,6 +20,7 @@ interface NowPlayingStageProps {
   onRepeat: () => void;
   onMenuOpen: () => void;
   defaultTrack: Track;
+  analyserNode?: AnalyserNode | null;
 }
 
 function formatTime(sec: number) {
@@ -30,7 +31,7 @@ function formatTime(sec: number) {
 
 export default function NowPlayingStage({
   player, onPlayPause, onNext, onPrev, onSeek,
-  onVolume, onShuffle, onRepeat, onMenuOpen, defaultTrack,
+  onVolume, onShuffle, onRepeat, onMenuOpen, defaultTrack, analyserNode,
 }: NowPlayingStageProps) {
   const [liked, setLiked] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -43,7 +44,7 @@ export default function NowPlayingStage({
     <div className="relative flex flex-col h-full overflow-hidden">
       {/* ── WebGL sphere — fills entire stage background ── */}
       <div className="absolute inset-0">
-        <AudioSphereCanvas isPlaying={player.isPlaying} progress={player.progress} />
+        <AudioSphereCanvas isPlaying={player.isPlaying} progress={player.progress} analyserNode={analyserNode} />
       </div>
 
       {/* ── Vignette overlay for readability ── */}

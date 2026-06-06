@@ -6,9 +6,10 @@ import AudioSphere from './AudioSphere';
 interface AudioSphereCanvasProps {
   isPlaying: boolean;
   progress: number;
+  analyserNode?: AnalyserNode | null;
 }
 
-export default function AudioSphereCanvas({ isPlaying, progress }: AudioSphereCanvasProps) {
+export default function AudioSphereCanvas({ isPlaying, progress, analyserNode }: AudioSphereCanvasProps) {
   return (
     <Canvas
       camera={{ position: [0, 0.4, 5.5], fov: 58 }}
@@ -17,7 +18,7 @@ export default function AudioSphereCanvas({ isPlaying, progress }: AudioSphereCa
       dpr={[1, 1.5]}
     >
       <Suspense fallback={null}>
-        <AudioSphere isPlaying={isPlaying} progress={progress} />
+        <AudioSphere isPlaying={isPlaying} progress={progress} analyserNode={analyserNode} />
         <EffectComposer>
           <Bloom
             intensity={isPlaying ? 2.8 : 1.4}

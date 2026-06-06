@@ -330,6 +330,7 @@ function MainApp() {
             onRepeat={handleRepeat}
             onMenuOpen={() => setMobileMenuOpen(true)}
             defaultTrack={DEFAULT_TRACK}
+            analyserNode={analyserRef.current}
           />
         ) : activeNav === 'upload' ? (
           <UploadSection
