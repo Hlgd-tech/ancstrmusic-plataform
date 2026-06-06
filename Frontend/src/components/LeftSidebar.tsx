@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import {
   Compass, Radio, BookOpen, Star, TrendingUp,
-  Wallet, Settings, CheckCircle, Radio as LogoIcon,
+  Wallet, Settings, CheckCircle, Radio as LogoIcon, Upload,
 } from 'lucide-react';
 import { WalletState } from '../types';
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: 'discover', label: 'Discover', icon: Compass },
   { id: 'feed', label: 'Feed', icon: Radio },
   { id: 'library', label: 'My Library', icon: BookOpen },
+  { id: 'upload', label: 'Creator Studio', icon: Upload },
   { id: 'era', label: 'ANCSTR ERA', icon: Star },
   { id: 'stake', label: 'Stake & Earn', icon: TrendingUp },
   { id: 'wallet', label: 'Wallet', icon: Wallet },

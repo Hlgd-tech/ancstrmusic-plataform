@@ -1,10 +1,14 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import LeftSidebar from './components/LeftSidebar';
 import NowPlayingStage from './components/NowPlayingStage';
 import RightPanel from './components/RightPanel';
 import BottomSheet from './components/BottomSheet';
 import WalletWidget from './components/WalletWidget';
+import UploadSection from './components/UploadSection';
+import LibrarySection from './components/LibrarySection';
+import StakeSection from './components/StakeSection';
 import { TRACKS, ALBUMS, QUEUE } from './data/tracks';
 import { WalletState, PlayerState, QueueTrack } from './types';
 import { toast } from 'sonner';
@@ -270,18 +274,46 @@ function MainApp() {
       />
       {/* Center Stage */}
       <main className="flex-1 relative min-w-0">
-        <NowPlayingStage
-          player={player}
-          onPlayPause={handlePlayPause}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          onSeek={handleSeek}
-          onVolume={handleVolume}
-          onShuffle={handleShuffle}
-          onRepeat={handleRepeat}
-          onMenuOpen={() => setMobileMenuOpen(true)}
-          defaultTrack={DEFAULT_TRACK}
-        />
+        {activeNav === 'discover' || activeNav === 'era' ? (
+          <NowPlayingStage
+            player={player}
+            onPlayPause={handlePlayPause}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onSeek={handleSeek}
+            onVolume={handleVolume}
+            onShuffle={handleShuffle}
+            onRepeat={handleRepeat}
+            onMenuOpen={() => setMobileMenuOpen(true)}
+            defaultTrack={DEFAULT_TRACK}
+          />
+        ) : activeNav === 'upload' ? (
+          <UploadSection
+            walletConnected={wallet.connected}
+            onUploadSuccess={(newTrack) => {
+              TRACKS.unshift(newTrack);
+              setPlayer(prev => ({ ...prev, track: newTrack, isPlaying: true, progress: 0 }));
+              toast.success(`¡"${newTrack.title}" registrada con éxito!`);
+            }}
+          />
+        ) : activeNav === 'library' ? (
+          <LibrarySection
+            onPlayTrack={(track) => {
+              setPlayer(prev => ({ ...prev, track, isPlaying: true, progress: 0 }));
+            }}
+            currentTrackId={player.track?.id}
+          />
+        ) : activeNav === 'stake' ? (
+          <StakeSection
+            walletConnected={wallet.connected}
+            ancBalance={wallet.ancBalance}
+          />
+        ) : (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-[#030508] font-mono text-[10px] text-white/20 uppercase tracking-[0.2em] gap-3">
+            <Settings className="w-8 h-8 animate-spin-slow stroke-[1]" />
+            <span>Próximamente: {activeNav}</span>
+          </div>
+        )}
       </main>
       {/* Right Panel */}
       <RightPanel
