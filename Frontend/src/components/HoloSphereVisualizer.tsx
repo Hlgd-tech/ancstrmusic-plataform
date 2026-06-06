@@ -336,7 +336,7 @@ function InteractiveHoloScene({ analyserNode, isPlaying }: HoloSphereVisualizerP
       </points>
 
       {/* B. OSCILOSCOPIO CENTRAL REACTIVO (Línea Horizontal) */}
-      <line ref={lineRef} geometry={lineGeometry}>
+      <line ref={lineRef as any} geometry={lineGeometry}>
         <shaderMaterial
           ref={lineMaterialRef}
           vertexShader={lineVertexShader}
