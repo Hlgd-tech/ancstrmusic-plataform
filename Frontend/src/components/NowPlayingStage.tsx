@@ -71,10 +71,10 @@ export default function NowPlayingStage({
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
           >
-            <p className="text-[9px] uppercase tracking-[0.28em] text-magma-400 font-semibold mb-1.5">
+            <p className="text-[9px] uppercase tracking-[0.28em] text-orange-500 font-bold mb-1.5">
               Now Playing
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white/95 tracking-tight leading-none">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide leading-none">
               {track.title}
             </h1>
             <div className="flex items-center gap-2 mt-2">

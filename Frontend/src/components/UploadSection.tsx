@@ -88,6 +88,9 @@ export default function UploadSection({ walletConnected, onUploadSuccess }: Uplo
       toast.success('¡Licencia registrada de forma inmutable en Solana!');
 
       setUploadStep('success');
+      // Crear una URL de objeto local para que el archivo de audio real subido suene de verdad
+      const realAudioUrl = URL.createObjectURL(audioFile);
+
       const newTrack = {
         id: Math.random().toString(36).substring(2, 9),
         title,
@@ -100,7 +103,7 @@ export default function UploadSection({ walletConnected, onUploadSuccess }: Uplo
         genre,
         quality: 'LOSSLESS',
         kbps: 320,
-        ipfs_audio_hash: mockAudioHash,
+        ipfs_audio_hash: realAudioUrl, // Usar la URL de objeto local real
       };
 
       if (onUploadSuccess) {

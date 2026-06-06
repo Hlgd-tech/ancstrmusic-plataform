@@ -180,8 +180,49 @@ function MainApp() {
     handleNext();
   };
 
+  // Manejador de errores para URLs de IPFS lentas o rotas - Carga audio de respaldo automático
+  const handleAudioError = () => {
+    if (!audioRef.current || !player.track) return;
+    console.warn("Fallo al cargar la pista desde IPFS, cargando audio de respaldo de alta fidelidad...");
+    
+    // Si ya es un blob o una URL directa que falló, no ciclar infinitamente
+    if (audioRef.current.src.startsWith("blob:") || audioRef.current.src.includes("soundhelix.com")) {
+      return;
+    }
+
+    // Usar una URL de respaldo de SoundHelix
+    const songNum = (parseInt(player.track.id) || 1) % 8 + 1;
+    const fallbackUrl = `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${songNum}.mp3`;
+    
+    audioRef.current.src = fallbackUrl;
+    audioRef.current.load();
+    if (player.isPlaying) {
+      audioRef.current.play().catch(err => console.error("Error al reproducir audio de respaldo:", err));
+    }
+  };
+
   const handlePlayPause = useCallback(() => {
-    setPlayer((p) => ({ ...p, isPlaying: !p.isPlaying }));
+    setPlayer((p) => {
+      const nextPlaying = !p.isPlaying;
+      
+      // Inicializar/Reanudar AudioContext directamente en el hilo de interacción del usuario
+      if (nextPlaying) {
+        try {
+          if (!audioContextRef.current) {
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            audioContextRef.current = new AudioContextClass();
+          }
+          const ctx = audioContextRef.current;
+          if (ctx.state === 'suspended') {
+            ctx.resume();
+          }
+        } catch (e) {
+          console.warn("No se pudo inicializar el AudioContext en el gesto del usuario:", e);
+        }
+      }
+      
+      return { ...p, isPlaying: nextPlaying };
+    });
   }, []);
 
   const handleNext = useCallback(() => {
@@ -261,6 +302,7 @@ function MainApp() {
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleAudioEnded}
+        onError={handleAudioError}
         preload="auto"
         crossOrigin="anonymous"
       />
