@@ -28,8 +28,12 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
   const ring2Ref = useRef<THREE.Mesh>(null);
   const ring3Ref = useRef<THREE.Mesh>(null);
 
+  // Buffer de datos de frecuencia para el analizador de audio
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+
   // Mutable animation state (not reactive – read inside useFrame)
   const energyRef = useRef(0);
+  const bassEnergyRef = useRef(0);
   const isPlayingRef = useRef(isPlaying);
   const progressRef = useRef(progress);
   isPlayingRef.current = isPlaying;
@@ -90,17 +94,57 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
     const playing = isPlayingRef.current;
     const prog = progressRef.current;
 
-    // Lerp audio energy
+    // Recuperar el AnalyserNode global
+    const analyser = (window as any).__AUDIO_ANALYSER__;
+    let bass = 0;
+    let mid = 0;
+
+    if (analyser && playing) {
+      if (!dataArrayRef.current) {
+        dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+      }
+      analyser.getByteFrequencyData(dataArrayRef.current);
+
+      // Calcular promedio de graves (Bass: primeros 12 bins ~ 20-150Hz)
+      let bassSum = 0;
+      const bassBins = 12;
+      for (let i = 0; i < bassBins; i++) {
+        bassSum += dataArrayRef.current[i];
+      }
+      bass = (bassSum / bassBins) / 255;
+
+      // Calcular promedio de medios (Mids: bins 12 a 60 ~ 150-750Hz)
+      let midSum = 0;
+      const midBins = 48;
+      for (let i = 12; i < 12 + midBins; i++) {
+        midSum += dataArrayRef.current[i];
+      }
+      mid = (midSum / midBins) / 255;
+    }
+
+    // Lerp de energía con alta velocidad de respuesta para reactividad real
+    const targetEnergy = playing ? (bass * 0.65 + mid * 0.35) : 0.08;
     energyRef.current = THREE.MathUtils.lerp(
       energyRef.current,
-      playing ? 1.0 : 0.08,
-      delta * 2.2
+      targetEnergy,
+      delta * 12.0 // Mayor velocidad de interpolación para golpes rápidos de bombo
     );
     const energy = energyRef.current;
 
-    // Rotate whole group
+    // Lerp de energía de graves para la escala física (Erupción)
+    bassEnergyRef.current = THREE.MathUtils.lerp(
+      bassEnergyRef.current,
+      playing ? bass : 0,
+      delta * 15.0 // Súper rápido para el "estallido" físico instantáneo
+    );
+    const bassEnergy = bassEnergyRef.current;
+
+    // Física de Erupción: la esfera estalla y pulsa dinámicamente con los graves (Bass)
+    const eruptionScale = 1.0 + (playing ? bassEnergy * 0.45 : 0);
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.04 * (1 + energy * 1.2);
+      groupRef.current.scale.set(eruptionScale, eruptionScale, eruptionScale);
+      // Rotación acelerada dinámicamente según la energía general y el bombo
+      groupRef.current.rotation.y += delta * 0.04 * (1 + energy * 3.5 + bassEnergy * 2.5);
     }
 
     // Pulse particle opacity and size with energy
@@ -143,10 +187,14 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
     const ringRefs = [ring1Ref, ring2Ref, ring3Ref];
     ringRefs.forEach((ref, i) => {
       if (!ref.current) return;
-      const mat = ref.current.material as THREE.MeshBasicMaterial;
+      const mat = ref.current.material as THREE.MeshStandardMaterial;
       const pulse = Math.sin(t * 0.8 + i * 1.4) * 0.5 + 0.5;
-      mat.opacity = (0.1 + energy * 0.28) * (1 - i * 0.08) * (0.7 + pulse * 0.3);
-      const scl = 1 + pulse * 0.015 * energy;
+      // Opacidad reactiva al volumen y graves
+      mat.opacity = (0.22 + energy * 0.48) * (1 - i * 0.08) * (0.7 + pulse * 0.3);
+      // Brillo emisivo reactivo en tiempo real al bombo/graves (Bass)
+      mat.emissiveIntensity = (2.0 + (playing ? bass * 4.5 : 0)) * (1 - i * 0.15);
+      // Escala reactiva al ritmo
+      const scl = 1 + pulse * 0.015 * energy + (playing ? bass * 0.04 : 0);
       ref.current.scale.set(scl, scl, scl);
     });
   });
@@ -182,33 +230,45 @@ export default function AudioSphere({ isPlaying, progress }: AudioSphereProps) {
         />
       </instancedMesh>
 
-      {/* Holographic ground rings */}
+      {/* Holographic ground rings - Iluminados con materiales emisivos intensos */}
       <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -1.55, 0]}>
-        <torusGeometry args={[1.85, 0.007, 8, 128]} />
-        <meshBasicMaterial
-          color="#00f0ff"
+        <torusGeometry args={[1.85, 0.015, 16, 128]} />
+        <meshStandardMaterial
+          color="#00eeff"
+          emissive="#0088ff"
+          emissiveIntensity={2.5}
+          roughness={0}
+          metalness={1}
           transparent
-          opacity={0.25}
+          opacity={0.6}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
       <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -1.65, 0]}>
-        <torusGeometry args={[2.2, 0.005, 8, 128]} />
-        <meshBasicMaterial
-          color="#ff4400"
+        <torusGeometry args={[2.2, 0.012, 16, 128]} />
+        <meshStandardMaterial
+          color="#ff5500"
+          emissive="#ff2200"
+          emissiveIntensity={2.5}
+          roughness={0}
+          metalness={1}
           transparent
-          opacity={0.18}
+          opacity={0.5}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
       <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -1.75, 0]}>
-        <torusGeometry args={[2.55, 0.003, 8, 128]} />
-        <meshBasicMaterial
-          color="#00f0ff"
+        <torusGeometry args={[2.55, 0.008, 16, 128]} />
+        <meshStandardMaterial
+          color="#00eeff"
+          emissive="#0088ff"
+          emissiveIntensity={2.0}
+          roughness={0}
+          metalness={1}
           transparent
-          opacity={0.1}
+          opacity={0.4}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />

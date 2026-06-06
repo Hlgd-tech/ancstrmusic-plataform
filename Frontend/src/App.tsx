@@ -116,6 +116,8 @@ function MainApp() {
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 512;
         analyserRef.current = analyser;
+        // Exponer el analizador globalmente para que el Canvas WebGL acceda con latencia cero
+        (window as any).__AUDIO_ANALYSER__ = analyser;
       }
 
       if (!sourceRef.current) {
