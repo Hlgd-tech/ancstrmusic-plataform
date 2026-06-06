@@ -1853,34 +1853,53 @@ export default function Home() {
                   { title: "Cyber Echoes", vol: "Vol. 2", img: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=300&auto=format&fit=crop" }, // Neon abstract cube
                   { title: "Into the Abyss", vol: "Vol. 3", img: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=300&auto=format&fit=crop" }, // Deep space abstract
                   { title: "Ethereal Rebirth", vol: "Vol. 4", img: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=300&auto=format&fit=crop" } // Magma orange gradient abstract
-                ].map((album, idx) => (
-                  <div 
-                    key={idx}
-                    className="bg-[#0a0f16]/40 border border-white/5 hover:border-orange-500/30 rounded-xl p-2.5 flex flex-col gap-2 group transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,100,0,0.08)] cursor-pointer"
-                  >
-                    <div className="aspect-square rounded-md overflow-hidden bg-black/60 border border-cyan-500/20 relative">
-                      {/* Portadas Holográficas con CSS Avanzado (Efecto de Luz Proyectada Monocromática Teñida) */}
-                      <img 
-                        src={album.img} 
-                        alt={album.title} 
-                        className="w-full h-full object-cover opacity-75 contrast-125 saturate-50 mix-blend-luminosity group-hover:scale-105 transition-transform duration-500" 
-                      />
-                      {/* Degradado de inyección de color holográfico por encima de la imagen */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-orange-500/20 mix-blend-overlay pointer-events-none"></div>
+                ].map((album, idx) => {
+                  const isCyan = idx % 2 === 0;
+                  return (
+                    <div 
+                      key={idx}
+                      className="bg-[#0a0f16]/40 border border-white/5 rounded-xl p-2 flex flex-col gap-2 group transition-all duration-300 cursor-pointer"
+                    >
+                      {/* El Contenedor de Luz (Bordes Neón Alternos) */}
+                      <div className={`aspect-square relative ${
+                        isCyan 
+                          ? "relative overflow-hidden rounded-lg border-2 border-cyan-500/80 shadow-[0_0_15px_rgba(0,255,255,0.5)]" 
+                          : "relative overflow-hidden rounded-lg border-2 border-orange-500/80 shadow-[0_0_15px_rgba(255,100,0,0.5)]"
+                      }`}>
+                        {/* Tratamiento Base de la Imagen */}
+                        <img 
+                          src={album.img} 
+                          alt={album.title} 
+                          className="w-full h-full object-cover opacity-80 contrast-[1.2] saturate-50 mix-blend-screen group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        
+                        {/* Líneas de Holograma (Scanlines - EL EFECTO CLAVE) */}
+                        {isCyan ? (
+                          <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(0,255,255,0.15)_3px,rgba(0,255,255,0.15)_4px)]"></div>
+                        ) : (
+                          <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(transparent,transparent_2px,rgba(255,100,0,0.15)_3px,rgba(255,100,0,0.15)_4px)]"></div>
+                        )}
+                        
+                        {/* Tinte Emisivo */}
+                        <div className={`absolute inset-0 mix-blend-color pointer-events-none ${
+                          isCyan ? "bg-cyan-500/30" : "bg-orange-500/30"
+                        }`}></div>
+                        
+                        {/* Overlay de Hover para Play */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+                          <Play className={`w-5 h-5 ${isCyan ? "text-cyan-400 fill-cyan-400/20" : "text-orange-400 fill-orange-400/20"}`} />
+                        </div>
+                      </div>
                       
-                      {/* Efecto de líneas de escaneo holográficas animadas */}
-                      <div className="scanlines-overlay opacity-40"></div>
-                      
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
-                        <Play className="w-5 h-5 text-orange-400 fill-orange-400/20" />
+                      <div className="flex flex-col min-w-0 px-1">
+                        <span className={`text-[10px] font-bold font-mono truncate transition-colors duration-300 ${
+                          isCyan ? "group-hover:text-cyan-400" : "group-hover:text-orange-400"
+                        }`}>{album.title}</span>
+                        <span className="text-[8px] font-mono text-slate-500 mt-0.5">{album.vol}</span>
                       </div>
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] font-bold font-mono text-slate-200 truncate">{album.title}</span>
-                      <span className="text-[8px] font-mono text-slate-500 mt-0.5">{album.vol}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
