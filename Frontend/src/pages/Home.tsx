@@ -411,6 +411,12 @@ export default function Home() {
         if (canvas) {
           const canvasCtx = canvas.getContext("2d");
           if (canvasCtx) {
+            // Sincronizar la resolución interna del canvas con su tamaño real en pantalla (evita pixelación al expandir)
+            if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+              canvas.width = canvas.clientWidth || 480;
+              canvas.height = canvas.clientHeight || 480;
+            }
+            
             const width = canvas.width;
             const height = canvas.height;
             
@@ -1239,13 +1245,17 @@ export default function Home() {
             {/* Reproductor holográfico activo cuando activeTab === "player" */}
             {activeTab === "player" && (
               <div 
-                className="relative flex items-center justify-center w-full h-full max-w-lg max-h-lg transition-transform duration-300 ease-out"
+                className="relative flex items-center justify-center w-full h-full max-w-2xl max-h-[600px] md:max-h-[650px] transition-all duration-500 ease-in-out"
                 style={{
                   transform: `scale(${1 + bassIntensity * 0.12})`
                 }}
               >
                 {/* Estructura de la esfera holográfica 3D */}
-                <div className="absolute w-[320px] h-[320px] holographic-sphere-3d flex items-center justify-center pointer-events-none">
+                <div className={`absolute holographic-sphere-3d flex items-center justify-center pointer-events-none transition-all duration-500 ease-in-out ${
+                  isRightPanelOpen 
+                    ? "w-[320px] h-[320px]" 
+                    : "w-[420px] h-[400px] md:w-[450px] md:h-[450px]"
+                }`}>
                   {/* Anillos rotatorios Y */}
                   <div className="holographic-ring-y" style={{ transform: 'rotateY(0deg)' }} />
                   <div className="holographic-ring-y" style={{ transform: 'rotateY(30deg)' }} />
@@ -1261,12 +1271,14 @@ export default function Home() {
                   <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(135deg)' }} />
                 </div>
 
-                {/* Canvas para el Osciloscopio en tiempo real */}
+                {/* Canvas para el Osciloscopio en tiempo real (Tamaño responsivo, resolución dinámica) */}
                 <canvas 
                   ref={canvasRef} 
-                  width={480} 
-                  height={480} 
-                  className="relative z-10 w-[480px] h-[480px] pointer-events-none"
+                  className={`relative z-10 pointer-events-none transition-all duration-500 ease-in-out ${
+                    isRightPanelOpen 
+                      ? "w-[480px] h-[480px]" 
+                      : "w-[580px] h-[580px] max-w-full max-h-full"
+                  }`}
                 />
 
                 {/* Resplandor holográfico de fondo reactivo a los bajos */}
