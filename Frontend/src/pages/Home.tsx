@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import * as THREE from "three";
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, Volume, VolumeX, Music, 
   Upload, Disc, ArrowRight, ShieldCheck, 
@@ -250,6 +251,14 @@ export default function Home() {
   // --- REFERENCIAS ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  
+  // --- REFERENCIAS WEBGL ---
+  const webglSceneRef = useRef<THREE.Scene | null>(null);
+  const webglCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const webglRendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const webglParticlesRef = useRef<THREE.Points | null>(null);
+  const webglLineRef = useRef<THREE.Line | null>(null);
+  const webglGlowRef = useRef<THREE.Mesh | null>(null);
   const [gatewayIndex, setGatewayIndex] = useState(0);
 
   // --- WEB AUDIO API & INTERACTIVIDAD ---
@@ -406,120 +415,93 @@ export default function Home() {
       let phaseOffset2 = 0;
       
       const updateFrequencies = () => {
-        // 1. DIBUJAR EN EL CANVAS DEL OSCILOSCOPIO
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const canvasCtx = canvas.getContext("2d");
-          if (canvasCtx) {
-            // Sincronizar la resolución interna del canvas con su tamaño real en pantalla (evita pixelación al expandir)
-            if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-              canvas.width = canvas.clientWidth || 480;
-              canvas.height = canvas.clientHeight || 480;
+        // Capturar datos de forma de onda en tiempo real
+        if (isPlaying) {
+          analyser.getByteTimeDomainData(dataArrayTime);
+        } else {
+          dataArrayTime.fill(128);
+        }
+
+        // 1. ANIMAR Y RENDERIZAR WEBGL 3D (THREE.JS)
+        const scene = webglSceneRef.current;
+        const camera = webglCameraRef.current;
+        const renderer = webglRendererRef.current;
+        const particles = webglParticlesRef.current;
+        const line = webglLineRef.current;
+        const glow = webglGlowRef.current;
+
+        if (scene && camera && renderer) {
+          const time = Date.now() * 0.001;
+
+          // A. Rotación continua del orbe de partículas, acelerando según bajos
+          if (particles) {
+            const rotSpeed = 0.005 + (bassIntensity * 0.025);
+            particles.rotation.y += rotSpeed;
+            particles.rotation.x = Math.sin(time * 0.1) * 0.15; // Leve inclinación orbital
+
+            // Vibración y modulación de partículas individuales
+            const geometry = particles.geometry;
+            const positions = geometry.attributes.position.array as Float32Array;
+            const initialPositions = geometry.userData.initialPositions as Float32Array;
+            const count = positions.length / 3;
+
+            for (let i = 0; i < count; i++) {
+              const ix = i * 3;
+              const iy = i * 3 + 1;
+              const iz = i * 3 + 2;
+
+              // Posiciones originales
+              const x0 = initialPositions[ix];
+              const y0 = initialPositions[iy];
+              const z0 = initialPositions[iz];
+
+              // Aplicar distorsión de onda basada en bajos e índice de partícula
+              const noiseFactor = isPlaying ? (0.05 + bassIntensity * 0.28) : 0.02;
+              const wave = Math.sin(y0 * 2.0 + time * 4.0 + i * 0.01) * noiseFactor;
+
+              // Desplazar radialmente
+              positions[ix] = x0 + (x0 * wave);
+              positions[iy] = y0 + (y0 * wave);
+              positions[iz] = z0 + (z0 * wave);
             }
-            
-            const width = canvas.width;
-            const height = canvas.height;
-            
-            // Limpiar canvas con transparencia
-            canvasCtx.clearRect(0, 0, width, height);
-            
-            if (isPlaying) {
-              analyser.getByteTimeDomainData(dataArrayTime);
-            } else {
-              // Si no está reproduciendo, llenar con valores neutros (forma de onda plana)
-              dataArrayTime.fill(128);
-            }
-            
-            // Función auxiliar para dibujar una onda
-            const drawWave = (
-              color: string, 
-              lineWidth: number, 
-              glowColor: string, 
-              glowBlur: number, 
-              amplitudeMultiplier: number, 
-              phaseOffset: number,
-              frequencyMultiplier: number = 1
-            ) => {
-              canvasCtx.beginPath();
-              canvasCtx.lineWidth = lineWidth;
-              canvasCtx.strokeStyle = color;
-              
-              if (glowBlur > 0) {
-                canvasCtx.shadowBlur = glowBlur;
-                canvasCtx.shadowColor = glowColor;
-              } else {
-                canvasCtx.shadowBlur = 0;
-              }
-              
-              const sliceWidth = width / bufferLength;
-              let x = 0;
-              
-              for (let i = 0; i < bufferLength; i++) {
-                // Obtener el valor del dominio del tiempo (0 a 255, 128 es el centro)
-                const v = dataArrayTime[i] / 128.0; // Normalizar alrededor de 1.0
-                const deviation = v - 1.0; // Desviación del centro (-1.0 a 1.0)
-                
-                // Aplicar un factor de forma de campana (Hanning window-like) para atenuar los extremos
-                const edgeAttenuation = Math.sin((i / (bufferLength - 1)) * Math.PI);
-                
-                // Añadir un desfase sinusoidal para las ondas secundarias
-                const waveShift = Math.sin((i / bufferLength) * Math.PI * 4 * frequencyMultiplier + phaseOffset) * 0.05;
-                
-                // Calcular posición Y final
-                const y = (height / 2) + (deviation * amplitudeMultiplier + waveShift) * (height / 3) * edgeAttenuation;
-                
-                if (i === 0) {
-                  canvasCtx.moveTo(x, y);
-                } else {
-                  canvasCtx.lineTo(x, y);
-                }
-                
-                x += sliceWidth;
-              }
-              
-              canvasCtx.stroke();
-            };
-            
-            // Incrementar fases para animar las ondas secundarias
-            if (isPlaying) {
-              phaseOffset1 += 0.04;
-              phaseOffset2 -= 0.03;
-            }
-            
-            // Dibujar 3 ondas superpuestas para efecto tridimensional analógico (Sonic Laboratory)
-            // Onda 1: Secundaria tenue azul/cyan (desfase negativo)
-            drawWave(
-              "rgba(6, 182, 212, 0.4)", 
-              1.5, 
-              "rgba(6, 182, 212, 0.6)", 
-              10, 
-              0.65, 
-              phaseOffset1,
-              1.2
-            );
-            
-            // Onda 2: Secundaria tenue magenta/púrpura (desfase positivo)
-            drawWave(
-              "rgba(168, 85, 247, 0.35)", 
-              1.5, 
-              "rgba(168, 85, 247, 0.5)", 
-              8, 
-              0.5, 
-              phaseOffset2,
-              0.8
-            );
-            
-            // Onda 3: Principal naranja de neón vibrante (sincronizada al audio real)
-            drawWave(
-              "rgba(249, 115, 22, 0.95)", 
-              3.0, 
-              "rgba(249, 115, 22, 0.9)", 
-              20, 
-              1.0, 
-              0,
-              1.0
-            );
+            geometry.attributes.position.needsUpdate = true;
           }
+
+          // B. Deformación del osciloscopio de línea 3D (Onda real de neón)
+          if (line) {
+            const lineGeometry = line.geometry;
+            const linePositions = lineGeometry.attributes.position.array as Float32Array;
+            const count = linePositions.length / 3;
+
+            for (let i = 0; i < count; i++) {
+              const iy = i * 3 + 1;
+
+              // Mapear los datos de forma de onda (0 a 255) a la coordenada Y de la línea 3D
+              // Muestrear de forma distribuida el buffer de tiempo real
+              const sampleIdx = Math.min(Math.floor(i * (dataArrayTime.length / count)), dataArrayTime.length - 1);
+              const v = dataArrayTime[sampleIdx] / 128.0 - 1.0; // Desviación de -1.0 a 1.0
+
+              // Atenuación de campana en los bordes para fundirse con la esfera
+              const edgeAttenuation = Math.sin((i / (count - 1)) * Math.PI);
+              
+              // Deformación vertical (Y)
+              linePositions[iy] = v * 2.8 * edgeAttenuation;
+            }
+            lineGeometry.attributes.position.needsUpdate = true;
+          }
+
+          // C. Pulsación física del orbe de brillo central
+          if (glow) {
+            const scale = 1.0 + (bassIntensity * 0.35);
+            glow.scale.set(scale, scale, scale);
+            const glowMaterial = glow.material as THREE.MeshBasicMaterial;
+            if (glowMaterial) {
+              glowMaterial.opacity = 0.05 + (bassIntensity * 0.15); // Más brillante con los bajos
+            }
+          }
+
+          // D. Renderizar escena en la GPU
+          renderer.render(scene, camera);
         }
         
         // 2. ACTUALIZAR FRECUENCIAS PARA EL BANNER DE FONDO Y PULSO DE BAJOS
@@ -567,111 +549,91 @@ export default function Home() {
     } catch (e) {
       console.warn("La inicialización de Web Audio API falló (CORS o restricción de navegador):", e);
       
-      // Fallback: Generador de ondas aleatorias fluidas y dibujo del canvas en modo offline
-      let phaseOffset1 = 0;
-      let phaseOffset2 = 0;
-      
+      // Fallback: Generador de ondas aleatorias fluidas y renderizado de WebGL 3D en modo offline
       const fallbackLoop = () => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const canvasCtx = canvas.getContext("2d");
-          if (canvasCtx) {
-            const width = canvas.width;
-            const height = canvas.height;
-            canvasCtx.clearRect(0, 0, width, height);
-            
-            // Simular datos de forma de onda usando funciones trigonométricas en fallback
-            const simulatedTimeData: number[] = [];
-            const time = Date.now() * 0.005;
-            
-            for (let i = 0; i < 256; i++) {
+        // 1. ANIMAR Y RENDERIZAR WEBGL 3D (THREE.JS)
+        const scene = webglSceneRef.current;
+        const camera = webglCameraRef.current;
+        const renderer = webglRendererRef.current;
+        const particles = webglParticlesRef.current;
+        const line = webglLineRef.current;
+        const glow = webglGlowRef.current;
+
+        if (scene && camera && renderer) {
+          const time = Date.now() * 0.001;
+
+          // A. Rotación continua del orbe de partículas, acelerando según bajos
+          if (particles) {
+            const rotSpeed = 0.005 + (bassIntensity * 0.025);
+            particles.rotation.y += rotSpeed;
+            particles.rotation.x = Math.sin(time * 0.1) * 0.15; // Leve inclinación orbital
+
+            // Vibración y modulación de partículas individuales
+            const geometry = particles.geometry;
+            const positions = geometry.attributes.position.array as Float32Array;
+            const initialPositions = geometry.userData.initialPositions as Float32Array;
+            const count = positions.length / 3;
+
+            for (let i = 0; i < count; i++) {
+              const ix = i * 3;
+              const iy = i * 3 + 1;
+              const iz = i * 3 + 2;
+
+              // Posiciones originales
+              const x0 = initialPositions[ix];
+              const y0 = initialPositions[iy];
+              const z0 = initialPositions[iz];
+
+              // Aplicar distorsión de onda basada en bajos e índice de partícula
+              const noiseFactor = isPlaying ? (0.05 + bassIntensity * 0.28) : 0.02;
+              const wave = Math.sin(y0 * 2.0 + time * 4.0 + i * 0.01) * noiseFactor;
+
+              // Desplazar radialmente
+              positions[ix] = x0 + (x0 * wave);
+              positions[iy] = y0 + (y0 * wave);
+              positions[iz] = z0 + (z0 * wave);
+            }
+            geometry.attributes.position.needsUpdate = true;
+          }
+
+          // B. Deformación del osciloscopio de línea 3D (Simulación de onda)
+          if (line) {
+            const lineGeometry = line.geometry;
+            const linePositions = lineGeometry.attributes.position.array as Float32Array;
+            const count = linePositions.length / 3;
+
+            for (let i = 0; i < count; i++) {
+              const iy = i * 3 + 1;
+
+              // Simular datos de forma de onda senoidal orgánica compleja en fallback
               let deviation = 0;
               if (isPlaying) {
-                // Sumar múltiples senoides para una forma de onda orgánica compleja
-                deviation = Math.sin(i * 0.1 - time) * 0.3 + 
-                            Math.cos(i * 0.05 + time * 1.5) * 0.15 + 
-                            Math.sin(i * 0.25 - time * 0.7) * 0.05;
+                deviation = Math.sin(i * 0.15 - time * 5.0) * 0.35 + 
+                            Math.cos(i * 0.08 + time * 7.5) * 0.18 + 
+                            Math.sin(i * 0.35 - time * 3.5) * 0.06;
               }
-              simulatedTimeData.push(deviation);
+
+              // Atenuación de campana en los bordes para fundirse con la esfera
+              const edgeAttenuation = Math.sin((i / (count - 1)) * Math.PI);
+              
+              // Deformación vertical (Y)
+              linePositions[iy] = deviation * 2.8 * edgeAttenuation;
             }
-            
-            const drawSimulatedWave = (
-              color: string, 
-              lineWidth: number, 
-              glowColor: string, 
-              glowBlur: number, 
-              amplitudeMultiplier: number, 
-              phaseOffset: number,
-              frequencyMultiplier: number = 1
-            ) => {
-              canvasCtx.beginPath();
-              canvasCtx.lineWidth = lineWidth;
-              canvasCtx.strokeStyle = color;
-              
-              if (glowBlur > 0) {
-                canvasCtx.shadowBlur = glowBlur;
-                canvasCtx.shadowColor = glowColor;
-              } else {
-                canvasCtx.shadowBlur = 0;
-              }
-              
-              const sliceWidth = width / simulatedTimeData.length;
-              let x = 0;
-              
-              for (let i = 0; i < simulatedTimeData.length; i++) {
-                const deviation = simulatedTimeData[i];
-                const edgeAttenuation = Math.sin((i / (simulatedTimeData.length - 1)) * Math.PI);
-                const waveShift = Math.sin((i / simulatedTimeData.length) * Math.PI * 4 * frequencyMultiplier + phaseOffset) * 0.05;
-                const y = (height / 2) + (deviation * amplitudeMultiplier + waveShift) * (height / 3) * edgeAttenuation;
-                
-                if (i === 0) {
-                  canvasCtx.moveTo(x, y);
-                } else {
-                  canvasCtx.lineTo(x, y);
-                }
-                x += sliceWidth;
-              }
-              canvasCtx.stroke();
-            };
-            
-            if (isPlaying) {
-              phaseOffset1 += 0.04;
-              phaseOffset2 -= 0.03;
-            }
-            
-            // Onda 1: Cyan
-            drawSimulatedWave(
-              "rgba(6, 182, 212, 0.4)", 
-              1.5, 
-              "rgba(6, 182, 212, 0.6)", 
-              10, 
-              0.65, 
-              phaseOffset1,
-              1.2
-            );
-            
-            // Onda 2: Magenta
-            drawSimulatedWave(
-              "rgba(168, 85, 247, 0.35)", 
-              1.5, 
-              "rgba(168, 85, 247, 0.5)", 
-              8, 
-              0.5, 
-              phaseOffset2,
-              0.8
-            );
-            
-            // Onda 3: Naranja
-            drawSimulatedWave(
-              "rgba(249, 115, 22, 0.95)", 
-              3.0, 
-              "rgba(249, 115, 22, 0.9)", 
-              20, 
-              1.0, 
-              0,
-              1.0
-            );
+            lineGeometry.attributes.position.needsUpdate = true;
           }
+
+          // C. Pulsación física del orbe de brillo central
+          if (glow) {
+            const scale = 1.0 + (bassIntensity * 0.35);
+            glow.scale.set(scale, scale, scale);
+            const glowMaterial = glow.material as THREE.MeshBasicMaterial;
+            if (glowMaterial) {
+              glowMaterial.opacity = 0.05 + (bassIntensity * 0.15); // Más brillante con los bajos
+            }
+          }
+
+          // D. Renderizar escena en la GPU
+          renderer.render(scene, camera);
         }
         
         if (isPlaying) {
@@ -699,6 +661,167 @@ export default function Home() {
       }
     };
   }, []);
+
+  // --- INICIALIZACIÓN Y CONTROL DE WEBGL (THREE.JS) ---
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // 1. Inicializar Escena, Cámara y Renderizador
+    const scene = new THREE.Scene();
+    webglSceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    camera.position.z = 15;
+    webglCameraRef.current = camera;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance"
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    webglRendererRef.current = renderer;
+
+    // 2. Crear Orbe de Partículas Holográficas (1500 partículas en 3D)
+    const particleCount = 1500;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const initialPositions = new Float32Array(particleCount * 3); // Para recordar la órbita original
+
+    const colorBlue = new THREE.Color("#06b6d4"); // Cyan neón
+    const colorOrange = new THREE.Color("#f97316"); // Naranja neón
+
+    for (let i = 0; i < particleCount; i++) {
+      // Distribución esférica aleatoria
+      const u = Math.random();
+      const v = Math.random();
+      const theta = u * 2.0 * Math.PI;
+      const phi = Math.acos(2.0 * v - 1.0);
+      const r = 3.5 + Math.random() * 0.5; // Radio aproximado del orbe
+
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.sin(phi) * Math.sin(theta);
+      const z = r * Math.cos(phi);
+
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+
+      initialPositions[i * 3] = x;
+      initialPositions[i * 3 + 1] = y;
+      initialPositions[i * 3 + 2] = z;
+
+      // Degradado cromático basado en la posición Y
+      const mixRatio = (y + r) / (r * 2); // 0 a 1
+      const mixedColor = new THREE.Color().lerpColors(colorBlue, colorOrange, mixRatio);
+
+      colors[i * 3] = mixedColor.r;
+      colors[i * 3 + 1] = mixedColor.g;
+      colors[i * 3 + 2] = mixedColor.b;
+    }
+
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.userData = { initialPositions }; // Guardar posiciones originales
+
+    // Material de partículas con brillo suave
+    const material = new THREE.PointsMaterial({
+      size: 0.08,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+    webglParticlesRef.current = particles;
+
+    // 3. Crear el Osciloscopio 3D (Línea de neón naranja)
+    const lineSegmentCount = 128;
+    const lineGeometry = new THREE.BufferGeometry();
+    const linePositions = new Float32Array(lineSegmentCount * 3);
+
+    for (let i = 0; i < lineSegmentCount; i++) {
+      const pct = i / (lineSegmentCount - 1);
+      const x = (pct - 0.5) * 8.5; // Cruzar el orbe horizontalmente
+      linePositions[i * 3] = x;
+      linePositions[i * 3 + 1] = 0;
+      linePositions[i * 3 + 2] = 0;
+    }
+
+    lineGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
+
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0xf97316, // Naranja neón principal
+      linewidth: 3, // Depende del soporte de WebGL de la GPU
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending
+    });
+
+    const line = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(line);
+    webglLineRef.current = line;
+
+    // 4. Crear un Orbe de Brillo Central de Neón Suave
+    const glowGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+      color: 0xf97316,
+      transparent: true,
+      opacity: 0.05,
+      blending: THREE.AdditiveBlending,
+      wireframe: false
+    });
+    const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+    scene.add(glowMesh);
+    webglGlowRef.current = glowMesh;
+
+    // 5. Manejar el redimensionamiento del lienzo de WebGL
+    const handleResize = () => {
+      if (!canvas || !webglRendererRef.current || !webglCameraRef.current) return;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+
+      webglCameraRef.current.aspect = w / h;
+      webglCameraRef.current.updateProjectionMatrix();
+
+      webglRendererRef.current.setSize(w, h);
+    };
+
+    // Registrar el ResizeObserver para detectar cambios de tamaño del canvas al colapsar el panel
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(canvas);
+
+    window.addEventListener("resize", handleResize);
+
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+      geometry.dispose();
+      material.dispose();
+      lineGeometry.dispose();
+      lineMaterial.dispose();
+      glowGeometry.dispose();
+      glowMaterial.dispose();
+      renderer.dispose();
+      
+      webglSceneRef.current = null;
+      webglCameraRef.current = null;
+      webglRendererRef.current = null;
+      webglParticlesRef.current = null;
+      webglLineRef.current = null;
+      webglGlowRef.current = null;
+    };
+  }, [isRightPanelOpen]);
 
   // Manejar cambios en la reproducción del elemento <audio>
   useEffect(() => {
