@@ -336,6 +336,7 @@ function InteractiveHoloScene({ analyserNode, isPlaying }: HoloSphereVisualizerP
       </points>
 
       {/* B. OSCILOSCOPIO CENTRAL REACTIVO (Línea Horizontal) */}
+      {/* @ts-ignore - Evitar conflicto de tipado JSX entre Three.js Line y SVG Line nativo de React */}
       <line ref={lineRef as any} geometry={lineGeometry}>
         <shaderMaterial
           ref={lineMaterialRef}
