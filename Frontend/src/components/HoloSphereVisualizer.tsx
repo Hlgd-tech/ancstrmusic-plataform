@@ -49,7 +49,9 @@ const vertexShader = `
     gl_Position = projectionMatrix * mvPosition;
     
     // Ajustar el tamaño de las partículas basándose en la distancia a la cámara (perspectiva)
-    gl_PointSize = (12.0 + uBass * 18.0) * (3.0 / -mvPosition.z);
+    // Se añade un épsilon de seguridad (0.01) para prevenir divisiones por cero o valores NaN que causen Context Lost
+    float safeZ = max(0.01, -mvPosition.z);
+    gl_PointSize = (8.0 + uBass * 12.0) * (3.0 / safeZ);
   }
 `;
 
@@ -78,12 +80,13 @@ const fragmentShader = `
     vec3 baseColor = mix(colorLeft, colorRight, mixFactor);
     
     // Añadir modulación de color y resplandor basado en la deformación (pulsación)
-    vec3 glowColor = baseColor * (1.5 + vElevation * 3.5 + uBass * 1.5);
+    // Reducimos el brillo multiplicador base (de 1.5 a 1.0) y acotamos la elevación para evitar quemar la pantalla (blowout)
+    vec3 glowColor = baseColor * (1.0 + clamp(vElevation, 0.0, 1.0) * 1.5 + uBass * 0.8);
     
     // Atenuación suave en los bordes de cada partícula individual para un efecto de orbe difuso
     float alpha = smoothstep(0.25, 0.0, dist);
     
-    gl_FragColor = vec4(glowColor, alpha * 0.85);
+    gl_FragColor = vec4(glowColor, alpha * 0.75);
   }
 `;
 
@@ -130,7 +133,8 @@ function InteractivePoints({ analyserNode, isPlaying, bassIntensity }: HoloSpher
           bassSum += dataArray[i];
         }
         const currentBass = bassSum / (8 * 255); // Normalizado de 0.0 a 1.0
-        materialRef.current.uniforms.uBass.value = currentBass;
+        // Aseguramos que no sea NaN o Infinity
+        materialRef.current.uniforms.uBass.value = isNaN(currentBass) ? 0.0 : Math.min(1.0, Math.max(0.0, currentBass));
         
         // Mapear 64 bandas de frecuencia a los uniforms del shader
         const freqs = materialRef.current.uniforms.uFreqs.value as Float32Array;
@@ -203,11 +207,12 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         />
         
         {/* Post-procesamiento: Efecto de Bloom (Resplandor de Neón Fotorrealista) */}
+        {/* Reducimos la intensidad del Bloom de 1.8 a 0.85 para evitar el cuadro blanco sólido (blowout) y dar un glow suave y elegante */}
         <EffectComposer>
           <Bloom
-            intensity={1.8}          // Intensidad del brillo
-            luminanceThreshold={0.15} // Umbral de brillo (qué tan brillante debe ser para brillar)
-            luminanceSmoothing={0.9}  // Suavizado del resplandor
+            intensity={0.85}          // Intensidad del brillo balanceada
+            luminanceThreshold={0.1}  // Umbral de brillo ajustado para capturar los colores de neón
+            luminanceSmoothing={0.75} // Suavizado del resplandor
             mipmapBlur={true}         // Desenfoque mipmap de alta calidad para un glow suave
           />
         </EffectComposer>
