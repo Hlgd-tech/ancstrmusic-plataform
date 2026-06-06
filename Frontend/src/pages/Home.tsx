@@ -823,6 +823,15 @@ export default function Home() {
     };
   }, [isRightPanelOpen]);
 
+  // Inicializar el analizador de audio y el bucle de fallback de WebGL inmediatamente al montar
+  useEffect(() => {
+    // Retrasar una fracción de segundo para asegurar que el canvas de WebGL esté completamente montado en el DOM
+    const timer = setTimeout(() => {
+      initAudioAnalyser();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Manejar cambios en la reproducción del elemento <audio>
   useEffect(() => {
     if (!audioRef.current) return;
@@ -1238,9 +1247,9 @@ export default function Home() {
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#03050a] text-slate-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400 relative">
       
-      {/* 1. LIENZO GENERAL: Imagen de fondo fotorrealista de la esfera holográfica */}
+      {/* 1. LIENZO GENERAL: Imagen de fondo fotorrealista de la esfera holográfica (Atenuada para dar protagonismo a la esfera WebGL 3D interactiva real) */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 opacity-80 pointer-events-none"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 opacity-15 pointer-events-none"
         style={{ backgroundImage: `url('https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/bg-sphere-htnXnoD48w6JjPXumRtzJZ.webp')` }}
       />
       
