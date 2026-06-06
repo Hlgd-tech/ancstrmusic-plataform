@@ -1251,6 +1251,8 @@ export default function Home() {
           isPlaying={isPlaying}
           bassIntensity={bassIntensity}
         />
+        {/* Efecto de líneas de escaneo animadas sobre el visualizador holográfico */}
+        <div className="scanlines-overlay opacity-25"></div>
       </div>
       
       {/* Rejilla holográfica de fondo */}
@@ -1866,7 +1868,10 @@ export default function Home() {
                       {/* Degradado de inyección de color holográfico por encima de la imagen */}
                       <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-orange-500/20 mix-blend-overlay pointer-events-none"></div>
                       
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      {/* Efecto de líneas de escaneo holográficas animadas */}
+                      <div className="scanlines-overlay opacity-40"></div>
+                      
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
                         <Play className="w-5 h-5 text-orange-400 fill-orange-400/20" />
                       </div>
                     </div>
