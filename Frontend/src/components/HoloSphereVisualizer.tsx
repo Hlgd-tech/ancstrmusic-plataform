@@ -386,14 +386,14 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         camera={{ position: [0, 0, 12], fov: 45 }}
         gl={{ 
           antialias: true, 
-          alpha: true, 
+          alpha: false, // Desactivamos alpha ya que usaremos un fondo sólido oscuro estable para evitar fallos de canal alfa con Bloom
           powerPreference: "high-performance",
-          preserveDrawingBuffer: false,
-          premultipliedAlpha: false
+          preserveDrawingBuffer: false
         }}
-        style={{ background: "transparent", width: "100%", height: "100%" }}
+        style={{ background: "#030508", width: "100%", height: "100%" }}
       >
-        {/* Eliminamos <color attach="background" /> para permitir transparencia nativa real y evitar que Three.js falle a fondo blanco */}
+        {/* Establecemos el color de fondo oscuro exacto de la dApp para que el post-procesamiento de Bloom se mezcle perfectamente sin quemar en blanco */}
+        <color attach="background" args={["#030508"]} />
         
         {/* Escena interactiva */}
         <InteractiveHoloScene 
