@@ -824,20 +824,17 @@ export default function Home() {
     };
   }, [isRightPanelOpen]);
 
-  // Inicializar el analizador de audio y el bucle de fallback de WebGL inmediatamente al montar
-  useEffect(() => {
-    // Retrasar una fracción de segundo para asegurar que el canvas de WebGL esté completamente montado en el DOM
-    const timer = setTimeout(() => {
-      initAudioAnalyser();
-    }, 150);
-    return () => clearTimeout(timer);
-  }, []);
+  // Eliminamos la inicialización automática de AudioContext al montar para evitar el bloqueo por políticas de Autoplay del navegador.
+  // El AudioContext se creará y reanudará estrictamente tras un gesto del usuario (hacer clic en Play).
 
-  // Manejar cambios en la reproducción del elemento <audio>
+  // Manejar cambios en la reproducción del elemento <audio> con inicialización diferida de AudioContext
   useEffect(() => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
+      // Inicializar/Reanudar analizador de audio estrictamente antes de reproducir para asegurar que el contexto de audio esté activo en el mismo hilo de ejecución del gesto de usuario
+      initAudioAnalyser();
+
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
@@ -853,8 +850,6 @@ export default function Home() {
           });
         });
       }
-      // Inicializar/Reanudar analizador de audio al reproducir
-      initAudioAnalyser();
     } else {
       audioRef.current.pause();
     }
