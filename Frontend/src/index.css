@@ -1,527 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-/* Variables de tema para compatibilidad Tailwind v3 */
-
-:root {
-  --primary: var(--color-orange-500);
-  --primary-foreground: var(--color-orange-50);
-  --sidebar-primary: var(--color-orange-600);
-  --sidebar-primary-foreground: var(--color-orange-50);
-  --chart-1: var(--color-orange-300);
-  --chart-2: var(--color-orange-500);
-  --chart-3: var(--color-orange-600);
-  --chart-4: var(--color-orange-700);
-  --chart-5: var(--color-orange-800);
-  --radius: 0.5rem;
-  --background: oklch(0.12 0.01 285);
-  --foreground: oklch(0.95 0.01 285);
-  --card: oklch(0.15 0.01 285);
-  --card-foreground: oklch(0.95 0.01 285);
-  --popover: oklch(0.15 0.01 285);
-  --popover-foreground: oklch(0.95 0.01 285);
-  --secondary: oklch(0.22 0.01 285);
-  --secondary-foreground: oklch(0.85 0.01 285);
-  --muted: oklch(0.18 0.01 285);
-  --muted-foreground: oklch(0.65 0.01 285);
-  --accent: oklch(0.25 0.02 285);
-  --accent-foreground: oklch(0.98 0.01 285);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.22 0.01 285);
-  --input: oklch(0.22 0.01 285);
-  --ring: oklch(0.65 0.2 35);
-  --sidebar: oklch(0.14 0.01 285);
-  --sidebar-foreground: oklch(0.95 0.01 285);
-  --sidebar-accent: oklch(0.22 0.01 285);
-  --sidebar-accent-foreground: oklch(0.98 0.01 285);
-  --sidebar-border: oklch(0.22 0.01 285);
-  --sidebar-ring: oklch(0.65 0.2 35);
-}
-
-.dark {
-  --background: oklch(0.12 0.01 285);
-  --foreground: oklch(0.95 0.01 285);
-  --card: oklch(0.15 0.01 285);
-  --card-foreground: oklch(0.95 0.01 285);
-  --popover: oklch(0.15 0.01 285);
-  --popover-foreground: oklch(0.95 0.01 285);
-  --primary: oklch(0.65 0.2 35);
-  --primary-foreground: oklch(0.98 0.01 285);
-  --secondary: oklch(0.22 0.01 285);
-  --secondary-foreground: oklch(0.85 0.01 285);
-  --muted: oklch(0.18 0.01 285);
-  --muted-foreground: oklch(0.65 0.01 285);
-  --accent: oklch(0.25 0.02 285);
-  --accent-foreground: oklch(0.98 0.01 285);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.22 0.01 285);
-  --input: oklch(0.22 0.01 285);
-  --ring: oklch(0.65 0.2 35);
-}
-
 @layer base {
-  * {
-    border-color: var(--border);
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: #030508;
+    color: #e8f4ff;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.15) transparent;
+  }
+  *::-webkit-scrollbar { width: 4px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.15); border-radius: 2px; }
+}
+
+@layer components {
+  /* Glassmorphism ultra-dark panels */
+  .glass-panel {
+    background: rgba(3, 5, 8, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 240, 255, 0.06);
+  }
+  .glass-panel-mid {
+    background: rgba(6, 10, 16, 0.7);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(0, 240, 255, 0.04);
+  }
+  .glass-card {
+    background: rgba(10, 16, 24, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  /* Cyan glow utilities */
+  .glow-cyan-sm { box-shadow: 0 0 12px rgba(0, 240, 255, 0.15); }
+  .glow-cyan-md { box-shadow: 0 0 24px rgba(0, 240, 255, 0.2), 0 0 60px rgba(0, 240, 255, 0.06); }
+  .glow-cyan-lg { box-shadow: 0 0 40px rgba(0, 240, 255, 0.3), 0 0 100px rgba(0, 240, 255, 0.1); }
+  .glow-magma-sm { box-shadow: 0 0 12px rgba(255, 68, 0, 0.2); }
+  .glow-magma-md { box-shadow: 0 0 24px rgba(255, 68, 0, 0.25), 0 0 60px rgba(255, 68, 0, 0.08); }
+
+  /* Text glow */
+  .text-glow-cyan { text-shadow: 0 0 16px rgba(0, 240, 255, 0.5), 0 0 40px rgba(0, 240, 255, 0.2); }
+  .text-glow-magma { text-shadow: 0 0 16px rgba(255, 100, 0, 0.6), 0 0 40px rgba(255, 68, 0, 0.2); }
+
+  /* Holographic cover overlay */
+  .holo-cover {
+    position: relative;
+  }
+  .holo-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 240, 255, 0.03) 2px,
+      rgba(0, 240, 255, 0.03) 4px
+    );
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .holo-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.08) 0%, transparent 50%, rgba(255, 68, 0, 0.06) 100%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    z-index: 1;
+  }
+
+  /* Cyan gradient border */
+  .border-cyan-glow {
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.02);
+  }
+  .border-magma-glow {
+    border: 1px solid rgba(255, 68, 0, 0.2);
+    box-shadow: inset 0 0 20px rgba(255, 68, 0, 0.02);
+  }
+
+  /* Progress track glow */
+  .progress-glow {
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.3);
+  }
+
+  /* Touch target enforcement */
+  .touch-target {
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 
-/* --- ESTILOS ADICIONALES PARA LA ESTÉTICA DARK PREMIUM & GLASSMORPHISM --- */
-
-.bg-radial-gradient {
-  background: radial-gradient(circle at 50% -20%, #1a1510 0%, #050507 70%);
-}
-
-/* Efecto de resplandor (Glow) sutil para el reproductor analógico */
-.analog-glow {
-  position: relative;
-}
-.analog-glow::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 110%;
-  height: 110%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0) 70%);
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 2rem;
-  filter: blur(10px);
-}
-
-/* Transición suave para todos los componentes interactivos */
-.transition-premium {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-
-/* --- CLASES DE SOPORTE PARA PERSPECTIVA 3D Y ESFERA HOLOGRÁFICA --- */
-.rotateX-60 {
-  transform: rotateX(60deg);
-}
-.rotateX-75 {
-  transform: rotateX(75deg);
-}
-.rotateY-75 {
-  transform: rotateY(75deg);
-}
-.rotateY-45 {
-  transform: rotateY(45deg);
-}
-.rotateY-135 {
-  transform: rotateY(135deg);
-}
-
-/* Clases de Glassmorphism Ultra-Premium */
-.glass-panel {
-  background: rgba(10, 10, 15, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-.glass-panel-glow-cyan {
-  box-shadow: 0 0 25px rgba(6, 182, 212, 0.15), inset 0 0 12px rgba(6, 182, 212, 0.05);
-}
-
-.glass-panel-glow-orange {
-  box-shadow: 0 0 25px rgba(249, 115, 22, 0.15), inset 0 0 12px rgba(249, 115, 22, 0.05);
-}
-
-/* Animación de pulsación para el espectro circular */
-@keyframes pulse-gentle {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
+@layer utilities {
+  .font-mono-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
   }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.03);
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
-.animate-pulse-gentle {
-  animation: pulse-gentle 3s ease-in-out infinite;
+/* ── CSS 3D Cube animation ─────────────────────────────────── */
+@keyframes rotateCube {
+  from { transform: rotateX(-25deg) rotateY(0deg); }
+  to   { transform: rotateX(-25deg) rotateY(360deg); }
 }
 
-
-/* --- ESTILOS CYBERPUNK GLASSMORPHISM COMPLETOS (OPCIÓN 2) --- */
-
-.bg-cyberpunk-main {
-  background-color: #030305;
-  background-image: 
-    radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 90% 90%, rgba(249, 115, 22, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
-  background-attachment: fixed;
+/* ── Playing bars animation (UP NEXT active indicator) ──────── */
+@keyframes playingBar {
+  from { height: 4px; }
+  to   { height: 12px; }
 }
 
-.glass-card {
-  background: rgba(10, 10, 16, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* ── Play button outer pulse ring ───────────────────────────── */
+@keyframes ping-slow {
+  0%   { transform: scale(1); opacity: 0.5; }
+  75%, 100% { transform: scale(1.5); opacity: 0; }
 }
-
-.glass-card:hover {
-  background: rgba(15, 15, 24, 0.7);
-  border-color: rgba(6, 182, 212, 0.2);
-  box-shadow: 0 12px 40px 0 rgba(6, 182, 212, 0.1);
-  transform: translateY(-2px);
-}
-
-.glass-card-orange:hover {
-  border-color: rgba(249, 115, 22, 0.2);
-  box-shadow: 0 12px 40px 0 rgba(249, 115, 22, 0.1);
-}
-
-.text-neon-cyan {
-  color: #22d3ee;
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
-}
-
-.text-neon-orange {
-  color: #fb923c;
-  text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
-}
-
-/* Scrollbar elegante y futurista */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.4);
-}
-
-/* --- ESTILOS DE ALTA FIDELIDAD PARA LA OPCIÓN 2 (MOCKUP REAL) --- */
-
-/* Marco Holográfico Dual Glow de la dApp */
-.holographic-frame {
-  position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 
-    0 0 50px rgba(0, 0, 0, 0.8),
-    inset 0 0 20px rgba(6, 182, 212, 0.05),
-    inset 0 0 20px rgba(249, 115, 22, 0.05);
-}
-
-.holographic-frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: 24px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(6, 182, 212, 0.05) 40%, rgba(249, 115, 22, 0.05) 60%, rgba(249, 115, 22, 0.3) 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  z-index: 10;
-}
-
-/* Efecto de rejilla de fondo cyberpunk sutil */
-.cyberpunk-grid {
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
-  background-size: 30px 30px;
-  background-position: center;
-}
-
-/* Esfera Holográfica 3D Avanzada (Multicapa CSS/SVG) */
-@keyframes sphere-spin {
-  0% { transform: rotate3d(1, 1, 1, 0deg); }
-  100% { transform: rotate3d(1, 1, 1, 360deg); }
-}
-
-@keyframes sphere-spin-reverse {
-  0% { transform: rotate3d(1, -1, 1, 360deg); }
-  100% { transform: rotate3d(1, -1, 1, 0deg); }
-}
-
-.sphere-container {
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.sphere-mesh-1 {
-  animation: sphere-spin 25s linear infinite;
-  transform-style: preserve-3d;
-}
-
-.sphere-mesh-2 {
-  animation: sphere-spin-reverse 35s linear infinite;
-  transform-style: preserve-3d;
-}
-
-/* Cubo 3D de Neón (EARN ANC) */
-@keyframes cube-spin {
-  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-  100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
-}
-
-.cube-container {
-  perspective: 400px;
-  width: 40px;
-  height: 40px;
-}
-
-.cube-3d {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  animation: cube-spin 12s linear infinite;
-}
-
-.cube-face {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border: 1px solid rgba(249, 115, 22, 0.5);
-  background: rgba(249, 115, 22, 0.03);
-  box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
-}
-
-.face-front  { transform: translateZ(12px); }
-.face-back   { transform: rotateY(180deg) translateZ(12px); }
-.face-left   { transform: rotateY(-90deg) translateZ(12px); border-color: rgba(6, 182, 212, 0.5); background: rgba(6, 182, 212, 0.03); box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); }
-.face-right  { transform: rotateY(90deg) translateZ(12px); border-color: rgba(6, 182, 212, 0.5); background: rgba(6, 182, 212, 0.03); box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); }
-.face-top    { transform: rotateX(90deg) translateZ(12px); }
-.face-bottom { transform: rotateX(-90deg) translateZ(12px); }
-
-/* Barra de reproducción flotante súper translúcida (Mockup Player) */
-.glass-player-bar {
-  background: rgba(10, 10, 16, 0.45);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-/* Efecto de brillo interactivo al pasar por encima */
-.hover-neon-glow-cyan:hover {
-  border-color: rgba(6, 182, 212, 0.4);
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
-}
-
-.hover-neon-glow-orange:hover {
-  border-color: rgba(249, 115, 22, 0.4);
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
-}
-
-/* --- ROTACIÓN 3D REAL PARA ESFERA HOLOGRÁFICA (OPCIÓN 2) --- */
-@keyframes orbital-spin-3d {
-  0% {
-    transform: rotateX(20deg) rotateY(0deg);
-  }
-  100% {
-    transform: rotateX(20deg) rotateY(360deg);
-  }
-}
-
-.holographic-sphere-3d {
-  transform-style: preserve-3d;
-  perspective: 1000px;
-  animation: orbital-spin-3d 20s linear infinite;
-}
-
-.holographic-ring-y {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 1.5px solid rgba(0, 180, 255, 0.25);
-  box-shadow: 0 0 15px rgba(0, 180, 255, 0.1), inset 0 0 15px rgba(0, 180, 255, 0.1);
-  transform-style: preserve-3d;
-}
-
-.holographic-ring-x {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(255, 100, 0, 0.2);
-  box-shadow: 0 0 15px rgba(255, 100, 0, 0.08), inset 0 0 15px rgba(255, 100, 0, 0.08);
-  transform-style: preserve-3d;
-  transform: rotateX(90deg);
-}
-
-/* Efecto de Líneas de Escaneo Holográficas (Scanlines Animadas) */
-@keyframes scanline-move {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.scanlines-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.12) 50%
-  );
-  background-size: 100% 4px; /* Líneas de 2px de grosor espaciadas por 2px */
-  z-index: 5;
-}
-
-.scanlines-overlay::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(0, 240, 255, 0.04) 10%,
-    rgba(255, 255, 255, 0) 20%
-  );
-  animation: scanline-move 8s linear infinite;
-  pointer-events: none;
-}
-
-/* --- EFECTOS HOLOGRÁFICOS AVANZADOS (PARPADEO Y INTERFERENCIA GLITCH) --- */
-
-/* Animación de parpadeo aleatorio simulando un tubo de neón encendiéndose */
-@keyframes hologram-flicker {
-  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
-    opacity: 0.99;
-    filter: hue-rotate(0deg) saturate(100%) contrast(100%);
-  }
-  20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
-    opacity: 0.4;
-    filter: hue-rotate(15deg) saturate(150%) contrast(130%);
-  }
-}
-
-.animate-hologram-flicker {
-  animation: hologram-flicker 4s linear infinite;
-}
-
-/* Animación de glitch con interferencia cromática y desplazamiento horizontal */
-@keyframes hologram-glitch {
-  0%, 100% {
-    transform: translate(0, 0) skew(0deg);
-    filter: hue-rotate(0deg);
-  }
-  2% {
-    transform: translate(-2px, 1px) skew(-3deg);
-    filter: hue-rotate(90deg) saturate(1.2);
-  }
-  4% {
-    transform: translate(2px, -1px) skew(3deg);
-    filter: hue-rotate(-90deg) saturate(1.2);
-  }
-  6% {
-    transform: translate(0, 0) skew(0deg);
-  }
-  15% {
-    transform: translate(0, 0) skew(0deg);
-  }
-  16% {
-    transform: translate(-3px, -2px) skew(5deg);
-    filter: hue-rotate(180deg) saturate(1.5);
-  }
-  17% {
-    transform: translate(3px, 2px) skew(-5deg);
-    filter: hue-rotate(-180deg) saturate(1.5);
-  }
-  18% {
-    transform: translate(0, 0) skew(0deg);
-  }
-  45% {
-    transform: translate(0, 0) skew(0deg);
-  }
-  46% {
-    transform: translate(-2px, 3px) skew(-2deg);
-    filter: brightness(1.5);
-  }
-  47% {
-    transform: translate(2px, -3px) skew(2deg);
-    filter: brightness(1);
-  }
-  48% {
-    transform: translate(0, 0) skew(0deg);
-  }
-}
-
-.group:hover .animate-hologram-glitch {
-  animation: hologram-glitch 2s linear infinite;
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
