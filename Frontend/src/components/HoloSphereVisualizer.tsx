@@ -71,20 +71,28 @@ const particleFragmentShader = `
     if (dist > 0.5) discard;
     float alpha = smoothstep(0.5, 0.1, dist) * (0.65 + uBass * 0.35);
     
-    // ILUMINACIÓN DUAL ASIMÉTRICA CON MIX() GLSL
-    // Lado izquierdo (x < 0) -> Cian Neón (#00f0ff)
-    // Lado derecho (x > 0) -> Naranja Cálido e Intenso (#ff5500)
-    vec3 leftColor = vec3(0.0, 0.94, 1.0);  // #00f0ff
-    vec3 rightColor = vec3(1.0, 0.33, 0.0); // #ff5500
+    // ILUMINACIÓN DUAL ASIMÉTRICA CON MIX() GLSL (Saturación Eléctrica Premium)
+    // Lado izquierdo (x < 0) -> Azul Espacial Profundo y Eléctrico (#0044ff)
+    // Lado derecho (x > 0) -> Naranja Magma Intenso y Vibrante (#ff2200)
+    vec3 leftColor = vec3(0.0, 0.27, 1.0);  // #0044ff (Azul Eléctrico)
+    vec3 rightColor = vec3(1.0, 0.13, 0.0); // #ff2200 (Naranja Magma)
     
     // Mezcla fluida en el eje X basada en la posición local de la partícula
     float mixFactor = smoothstep(-0.8, 0.8, vPosition.x);
     vec3 baseColor = mix(leftColor, rightColor, mixFactor);
     
-    // Añadir brillo de alta emisión modulado por la elevación del ruido y bajos
-    vec3 glowColor = baseColor * (1.2 + vElevation * 3.0 + uBass * 1.5);
+    // OSCURECER EL NÚCLEO: Calcular la distancia radial de la partícula al centro de la esfera
+    // El radio máximo de generación es aprox 1.6. Atenuamos fuertemente el núcleo (r < 0.6)
+    float radialDist = length(vPosition);
+    float coreAttenuation = smoothstep(0.1, 0.7, radialDist); // 0 en el centro, 1 en el borde exterior
     
-    gl_FragColor = vec4(glowColor, alpha * 0.8);
+    // Añadir brillo de alta emisión modulado por la elevación del ruido, bajos y atenuación del núcleo
+    vec3 glowColor = baseColor * (0.8 + vElevation * 2.5 + uBass * 1.2) * coreAttenuation;
+    
+    // Reducir también la opacidad en el núcleo para un efecto de profundidad "hueco" y misterioso
+    float finalAlpha = alpha * 0.75 * coreAttenuation;
+    
+    gl_FragColor = vec4(glowColor, finalAlpha);
   }
 `;
 
@@ -406,9 +414,9 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         <EffectComposer>
           <Bloom 
             mipmapBlur={true}
-            intensity={0.65} 
-            luminanceThreshold={0.2} 
-            luminanceSmoothing={0.9} 
+            intensity={0.75} 
+            luminanceThreshold={0.35} // Incrementamos el umbral para evitar que el brillo aditivo se queme a blanco puro
+            luminanceSmoothing={0.85} 
           />
         </EffectComposer>
       </Canvas>

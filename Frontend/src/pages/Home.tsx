@@ -1792,7 +1792,7 @@ export default function Home() {
           {/* ========================================================================= */}
           {/* BLOQUE DERECHO (w-96): Contenidos y Playlist con Iluminación Naranja */}
           {/* ========================================================================= */}
-          <section className={`flex flex-col justify-between h-full bg-[#0a0f16]/60 backdrop-blur-xl border border-orange-500/30 rounded-2xl shadow-[0_0_30px_-5px_rgba(255,100,0,0.15)] overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out transform origin-right ${
+          <section className={`flex flex-col justify-between h-full bg-[#0a0f16]/60 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_0_30px_-5px_rgba(255,100,0,0.15)] overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out transform origin-right ${
             isRightPanelOpen 
               ? "w-96 p-5 opacity-100 translate-x-0" 
               : "w-0 p-0 opacity-0 translate-x-full border-0 shadow-none pointer-events-none"
@@ -1847,10 +1847,10 @@ export default function Home() {
                 }`}
               >
                 {[
-                  { title: "The Genesis", vol: "Vol. 1", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_genesis-dA4XYwNQ6oCojnGnoNVWU7.webp" },
-                  { title: "Cyber Echoes", vol: "Vol. 2", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_stable-ZkbAmoDjUkftQcV24apMRo.webp" },
-                  { title: "Into the Abyss", vol: "Vol. 3", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_history-iKDCRAzXkDSabWpUUxBDQ8.webp" },
-                  { title: "Rebirth", vol: "Vol. 4", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663726265610/oEFnNWCh7HaoKcALf8YNcq/album_genesis-dA4XYwNQ6oCojnGnoNVWU7.webp" }
+                  { title: "The Genesis", vol: "Vol. 1", img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=300&auto=format&fit=crop" }, // Abstract premium glass/neon
+                  { title: "Cyber Echoes", vol: "Vol. 2", img: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=300&auto=format&fit=crop" }, // Neon abstract cube
+                  { title: "Into the Abyss", vol: "Vol. 3", img: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=300&auto=format&fit=crop" }, // Deep space abstract
+                  { title: "Ethereal Rebirth", vol: "Vol. 4", img: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=300&auto=format&fit=crop" } // Magma orange gradient abstract
                 ].map((album, idx) => (
                   <div 
                     key={idx}
