@@ -293,7 +293,7 @@ export default function Home() {
     if (isAppleIOS) {
       setIsIOS(true);
       // Mostrar banner de iOS si no se ha cerrado en esta sesión
-      const dismissed = sessionStorage.getItem('pwa-banner-dismissed');
+      const dismissed = localStorage.getItem('pwa-banner-dismissed');
       if (!dismissed) {
         // Retrasar la aparición del banner holográfico para una experiencia no intrusiva
         const timer = setTimeout(() => setShowInstallBanner(true), 3000);
@@ -306,7 +306,7 @@ export default function Home() {
       e.preventDefault();
       setDeferredPrompt(e);
       
-      const dismissed = sessionStorage.getItem('pwa-banner-dismissed');
+      const dismissed = localStorage.getItem('pwa-banner-dismissed');
       if (!dismissed) {
         setTimeout(() => setShowInstallBanner(true), 3000);
       }
@@ -325,7 +325,7 @@ export default function Home() {
       setTimeout(() => {
         setShowInstallBanner(false);
         // Marcar como descartado para que no vuelva a molestar
-        sessionStorage.setItem('pwa-banner-dismissed', 'true');
+        localStorage.setItem('pwa-banner-dismissed', 'true');
       }, 3500);
     };
 
@@ -2047,7 +2047,7 @@ export default function Home() {
                 <button 
                   onClick={() => {
                     setShowInstallBanner(false);
-                    sessionStorage.setItem('pwa-banner-dismissed', 'true');
+                    localStorage.setItem('pwa-banner-dismissed', 'true');
                   }}
                   className="text-slate-400 hover:text-orange-400 transition-colors p-1"
                   disabled={isInstalling}
@@ -2125,7 +2125,7 @@ export default function Home() {
                   <Button
                     onClick={() => {
                       setShowInstallBanner(false);
-                      sessionStorage.setItem('pwa-banner-dismissed', 'true');
+                      localStorage.setItem('pwa-banner-dismissed', 'true');
                       toast.info("Recordatorio pospuesto.");
                     }}
                     variant="outline"
