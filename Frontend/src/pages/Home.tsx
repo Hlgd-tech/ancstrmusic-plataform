@@ -4,7 +4,7 @@ import {
   Upload, Disc, ArrowRight, ShieldCheck, 
   Coins, Sparkles, CheckCircle2, RefreshCw, AlertCircle, Loader2,
   TrendingUp, History, Heart, Send, DollarSign, Share2, Award, User, Image, MessageSquare,
-  ChevronDown, Download, X, Smartphone
+  ChevronDown, Download, X, Smartphone, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -142,6 +142,7 @@ export default function Home() {
   const [tracks, setTracks] = useState<Track[]>(INITIAL_TRACKS);
   const [activeTab, setActiveTab] = useState<string>("player");
   const [isAncstrEraOpen, setIsAncstrEraOpen] = useState(true);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
   const [isUpNextOpen, setIsUpNextOpen] = useState(true);
   const [isEarnAncOpen, setIsEarnAncOpen] = useState(true);
 
@@ -1678,7 +1679,11 @@ export default function Home() {
           {/* ========================================================================= */}
           {/* BLOQUE DERECHO (w-96): Contenidos y Playlist con Iluminación Naranja */}
           {/* ========================================================================= */}
-          <section className="w-96 flex flex-col justify-between h-full bg-[#0a0f16]/60 backdrop-blur-xl border border-orange-500/30 rounded-2xl p-5 shadow-[0_0_30px_-5px_rgba(255,100,0,0.15)] overflow-y-auto no-scrollbar">
+          <section className={`flex flex-col justify-between h-full bg-[#0a0f16]/60 backdrop-blur-xl border border-orange-500/30 rounded-2xl shadow-[0_0_30px_-5px_rgba(255,100,0,0.15)] overflow-y-auto no-scrollbar transition-all duration-500 ease-in-out transform origin-right ${
+            isRightPanelOpen 
+              ? "w-96 p-5 opacity-100 translate-x-0" 
+              : "w-0 p-0 opacity-0 translate-x-full border-0 shadow-none pointer-events-none"
+          }`}>
             
             {/* ANCSTR ERA (Álbumes Destacados) - Colapsable Interactiva */}
             <div className="flex flex-col gap-4">
@@ -1694,18 +1699,31 @@ export default function Home() {
                     }`} 
                   />
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // Evitar que abra/cierre el acordeón al hacer clic en VIEW ALL
-                  }}
-                  className={`text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider transition-all duration-500 ${
-                    isAncstrEraOpen 
-                      ? "opacity-100 translate-x-0" 
-                      : "opacity-0 translate-x-4 pointer-events-none"
-                  }`}
-                >
-                  VIEW ALL →
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evitar que abra/cierre el acordeón al hacer clic en VIEW ALL
+                    }}
+                    className={`text-[10px] font-mono text-slate-400 hover:text-slate-200 tracking-wider transition-all duration-500 ${
+                      isAncstrEraOpen 
+                        ? "opacity-100 translate-x-0" 
+                        : "opacity-0 translate-x-4 pointer-events-none"
+                    }`}
+                  >
+                    VIEW ALL →
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evitar que abra/cierre el acordeón
+                      setIsRightPanelOpen(false);
+                      toast.info("Panel colapsado. Usa la pestaña derecha para expandir.");
+                    }}
+                    className="p-1 rounded-lg bg-white/5 border border-white/5 hover:border-orange-500/30 hover:bg-orange-500/10 text-slate-400 hover:text-orange-400 transition-all duration-300 cursor-pointer"
+                    title="Colapsar panel derecho"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
               
               <div 
@@ -1912,6 +1930,16 @@ export default function Home() {
             </div>
 
           </section>
+
+          {/* Pestaña flotante de expansión en el borde derecho cuando el panel está cerrado */}
+          {!isRightPanelOpen && (
+            <button
+              onClick={() => setIsRightPanelOpen(true)}
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-40 h-24 w-6 bg-[#0a0f16]/90 backdrop-blur-md border-l border-t border-b border-orange-500/50 rounded-l-xl flex items-center justify-center text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 shadow-[-5px_0_15px_rgba(255,100,0,0.15)] transition-all duration-300 animate-pulse cursor-pointer group"
+            >
+              <ChevronLeft className="w-4.5 h-4.5 transition-transform duration-300 group-hover:-translate-x-0.5" />
+            </button>
+          )}
         </main>
 
         {/* ========================================================================= */}
