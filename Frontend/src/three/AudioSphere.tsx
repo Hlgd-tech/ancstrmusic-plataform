@@ -339,19 +339,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
         />
       </mesh>
 
-      {/* Cono de Luz Proyector Invertido (Luz translúcida aditiva desde el suelo) */}
-      <mesh position={[0, -1.0, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[3.2, 3.8, 32, 1, true]} />
-        <meshBasicMaterial
-          color="#00aaff"
-          transparent
-          opacity={0.05 + (energyRef.current * 0.08)} // Pulsación sutil de luz con el ritmo
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
-      </mesh>
+
 
       {/* Sistema de Partículas de Gravedad (Flujo ascendente de datos) */}
       <points ref={gravityParticlesRef}>
