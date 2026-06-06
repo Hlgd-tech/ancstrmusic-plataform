@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
+import HoloSphereVisualizer from "@/components/HoloSphereVisualizer";
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, Volume, VolumeX, Music, 
   Upload, Disc, ArrowRight, ShieldCheck, 
@@ -1374,51 +1375,33 @@ export default function Home() {
           {/* BLOQUE CENTRAL: Esfera holográfica 3D con osciloscopio de tiempo real */}
           {/* ========================================================================= */}
           <section className="flex-1 h-full flex flex-col justify-center items-center relative overflow-hidden">
-            {/* Reproductor holográfico activo cuando activeTab === "player" */}
-            {activeTab === "player" && (
+            {/* Reproductor holográfico activo cuando activeTab === "player" o "ancstr_era" */}
+            {(activeTab === "player" || activeTab === "ancstr_era") && (
               <div 
-                className="relative flex items-center justify-center w-full h-full max-w-2xl max-h-[600px] md:max-h-[650px] transition-all duration-500 ease-in-out"
+                className="relative flex items-center justify-center w-full h-full max-w-3xl max-h-[600px] md:max-h-[650px] transition-all duration-500 ease-in-out"
                 style={{
-                  transform: `scale(${1 + bassIntensity * 0.12})`
+                  transform: `scale(${1 + bassIntensity * 0.08})`
                 }}
               >
-                {/* Estructura de la esfera holográfica 3D */}
-                <div className={`absolute holographic-sphere-3d flex items-center justify-center pointer-events-none transition-all duration-500 ease-in-out ${
+                {/* Visualizador Holográfico de WebGL 3D (R3F + Shaders + Bloom) */}
+                <div className={`relative z-10 transition-all duration-500 ease-in-out ${
                   isRightPanelOpen 
-                    ? "w-[320px] h-[320px]" 
-                    : "w-[420px] h-[400px] md:w-[450px] md:h-[450px]"
+                    ? "w-[480px] h-[480px]" 
+                    : "w-[650px] h-[650px] max-w-full max-h-full"
                 }`}>
-                  {/* Anillos rotatorios Y */}
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(0deg)' }} />
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(30deg)' }} />
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(60deg)' }} />
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(90deg)' }} />
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(120deg)' }} />
-                  <div className="holographic-ring-y" style={{ transform: 'rotateY(150deg)' }} />
-
-                  {/* Anillos rotatorios X */}
-                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(0deg)' }} />
-                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(45deg)' }} />
-                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(90deg)' }} />
-                  <div className="holographic-ring-x" style={{ transform: 'rotateX(90deg) rotateY(135deg)' }} />
+                  <HoloSphereVisualizer 
+                    analyserNode={analyserRef.current}
+                    isPlaying={isPlaying}
+                    bassIntensity={bassIntensity}
+                  />
                 </div>
-
-                {/* Canvas para el Osciloscopio en tiempo real (Tamaño responsivo, resolución dinámica) */}
-                <canvas 
-                  ref={canvasRef} 
-                  className={`relative z-10 pointer-events-none transition-all duration-500 ease-in-out ${
-                    isRightPanelOpen 
-                      ? "w-[480px] h-[480px]" 
-                      : "w-[580px] h-[580px] max-w-full max-h-full"
-                  }`}
-                />
 
                 {/* Resplandor holográfico de fondo reactivo a los bajos */}
                 <div 
-                  className="absolute w-[220px] h-[220px] rounded-full bg-radial-gradient filter blur-2xl opacity-40 transition-all duration-300 pointer-events-none"
+                  className="absolute w-[250px] h-[250px] rounded-full bg-radial-gradient filter blur-3xl opacity-30 transition-all duration-300 pointer-events-none"
                   style={{
-                    boxShadow: `0 0 ${40 + bassIntensity * 80}px rgba(255, 119, 0, ${0.2 + bassIntensity * 0.5})`,
-                    transform: `scale(${1 + bassIntensity * 0.2})`
+                    boxShadow: `0 0 ${60 + bassIntensity * 120}px rgba(255, 119, 0, ${0.15 + bassIntensity * 0.6})`,
+                    transform: `scale(${1 + bassIntensity * 0.25})`
                   }}
                 />
               </div>
