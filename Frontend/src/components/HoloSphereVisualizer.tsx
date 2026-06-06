@@ -11,7 +11,7 @@ interface HoloSphereVisualizerProps {
   bassIntensity: number;
 }
 
-// 1. Shaders personalizados de GLSL
+// 1. Shaders personalizados de GLSL optimizados y seguros matemáticamente
 const vertexShader = `
   uniform float uTime;
   uniform float uBass;
@@ -23,22 +23,20 @@ const vertexShader = `
 
   // Función de ruido simple para simular deformación orgánica
   float sinusNoise(vec3 p) {
-    return sin(p.x * 2.0 + uTime * 1.5) * cos(p.y * 2.0 + uTime * 1.5) * sin(p.z * 2.0 + uTime * 1.5);
+    return sin(p.x * 2.5 + uTime * 1.2) * cos(p.y * 2.5 + uTime * 1.2) * sin(p.z * 2.5 + uTime * 1.2);
   }
 
   void main() {
     vPosition = position;
     vXPosition = position.x;
     
-    // Obtener la distancia desde el centro (esfera)
-    float dist = length(position);
     vec3 normal = normalize(position);
     
     // Deformación de baja frecuencia (bajos/bass) para hacer que la esfera palpite físicamente
-    float pulse = uBass * 0.28;
+    float pulse = clamp(uBass, 0.0, 1.0) * 0.25;
     
     // Ruido orgánico de alta tecnología
-    float noise = sinusNoise(position) * (0.05 + uBass * 0.12);
+    float noise = sinusNoise(position) * (0.04 + clamp(uBass, 0.0, 1.0) * 0.08);
     
     // Deformar los vértices a lo largo de su vector normal (deformación esférica real)
     vec3 newPosition = position + normal * (pulse + noise);
@@ -51,7 +49,7 @@ const vertexShader = `
     // Ajustar el tamaño de las partículas basándose en la distancia a la cámara (perspectiva)
     // Se añade un épsilon de seguridad (0.01) para prevenir divisiones por cero o valores NaN que causen Context Lost
     float safeZ = max(0.01, -mvPosition.z);
-    gl_PointSize = (8.0 + uBass * 12.0) * (3.0 / safeZ);
+    gl_PointSize = (6.0 + clamp(uBass, 0.0, 1.0) * 10.0) * (3.0 / safeZ);
   }
 `;
 
@@ -72,21 +70,23 @@ const fragmentShader = `
     
     // Iluminación dual asimétrica de neón:
     // Cian brillante a la izquierda (x < 0) y naranja/cobre intenso a la derecha (x > 0)
-    vec3 colorLeft = vec3(0.0, 0.85, 1.0);     // Cian Neón
-    vec3 colorRight = vec3(1.0, 0.38, 0.0);    // Naranja Cobre Neón
+    vec3 colorLeft = vec3(0.0, 0.8, 1.0);     // Cian Neón
+    vec3 colorRight = vec3(1.0, 0.35, 0.0);    // Naranja Cobre Neón
     
     // Mezcla suave entre izquierda y derecha basada en la coordenada X de la partícula
-    float mixFactor = smoothstep(-1.2, 1.2, vXPosition);
+    float mixFactor = smoothstep(-1.0, 1.0, vXPosition);
     vec3 baseColor = mix(colorLeft, colorRight, mixFactor);
     
     // Añadir modulación de color y resplandor basado en la deformación (pulsación)
-    // Reducimos el brillo multiplicador base (de 1.5 a 1.0) y acotamos la elevación para evitar quemar la pantalla (blowout)
-    vec3 glowColor = baseColor * (1.0 + clamp(vElevation, 0.0, 1.0) * 1.5 + uBass * 0.8);
+    // Se limita el brillo multiplicador máximo para evitar sobreexposición a blanco (blowout)
+    float safeElevation = clamp(vElevation, 0.0, 1.0);
+    float safeBass = clamp(uBass, 0.0, 1.0);
+    vec3 glowColor = baseColor * (0.85 + safeElevation * 1.2 + safeBass * 0.6);
     
     // Atenuación suave en los bordes de cada partícula individual para un efecto de orbe difuso
     float alpha = smoothstep(0.25, 0.0, dist);
     
-    gl_FragColor = vec4(glowColor, alpha * 0.75);
+    gl_FragColor = vec4(glowColor, alpha * 0.7);
   }
 `;
 
@@ -95,13 +95,9 @@ function InteractivePoints({ analyserNode, isPlaying, bassIntensity }: HoloSpher
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   
-  // Array de frecuencias de respaldo para la simulación offline
-  const simulatedFreqs = useMemo(() => new Float32Array(64), []);
-
-  // Crear la geometría de la esfera
+  // Crear la geometría de la esfera con radio reducido para evitar zoom excesivo
   const geometry = useMemo(() => {
-    // Generar una esfera con distribución de puntos uniforme
-    return new THREE.SphereGeometry(1.6, 64, 64);
+    return new THREE.SphereGeometry(1.2, 48, 48);
   }, []);
 
   // Uniforms del shader personalizado
@@ -113,6 +109,18 @@ function InteractivePoints({ analyserNode, isPlaying, bassIntensity }: HoloSpher
     };
   }, []);
 
+  // Limpieza estricta de memoria de la GPU al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (geometry) {
+        geometry.dispose();
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+      }
+    };
+  }, [geometry]);
+
   // Bucle de animación de R3F (useFrame se ejecuta en la GPU a 60+ FPS)
   useFrame((state) => {
     const { clock } = state;
@@ -122,43 +130,61 @@ function InteractivePoints({ analyserNode, isPlaying, bassIntensity }: HoloSpher
       // 1. Actualizar el tiempo global
       materialRef.current.uniforms.uTime.value = elapsedTime;
       
-      // 2. Obtener datos reales de la Web Audio API si está activa
+      // 2. Obtener datos reales de la Web Audio API si está activa y tiene un estado de reproducción válido
+      let audioDataAvailable = false;
+      
       if (analyserNode && isPlaying) {
-        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
-        analyserNode.getByteFrequencyData(dataArray);
-        
-        // Extraer la intensidad de bajos (primeras 8 bandas de frecuencia)
-        let bassSum = 0;
-        for (let i = 0; i < 8; i++) {
-          bassSum += dataArray[i];
+        try {
+          const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+          analyserNode.getByteFrequencyData(dataArray);
+          
+          if (dataArray.length > 0 && dataArray[0] !== undefined) {
+            audioDataAvailable = true;
+            
+            // Extraer la intensidad de bajos (primeras 8 bandas de frecuencia)
+            let bassSum = 0;
+            for (let i = 0; i < 8; i++) {
+              bassSum += dataArray[i];
+            }
+            const currentBass = bassSum / (8 * 255); // Normalizado de 0.0 a 1.0
+            
+            // Estabilización matemática estricta contra NaN/Infinity
+            materialRef.current.uniforms.uBass.value = isNaN(currentBass) || !isFinite(currentBass) 
+              ? 0.0 
+              : Math.min(1.0, Math.max(0.0, currentBass));
+            
+            // Mapear 64 bandas de frecuencia a los uniforms del shader
+            const freqs = materialRef.current.uniforms.uFreqs.value as Float32Array;
+            for (let i = 0; i < 64; i++) {
+              const val = dataArray[i * 2] / 255.0;
+              freqs[i] = isNaN(val) || !isFinite(val) ? 0.0 : val;
+            }
+          }
+        } catch (e) {
+          // Captura silenciosa de errores de audio para evitar caídas de WebGL
+          audioDataAvailable = false;
         }
-        const currentBass = bassSum / (8 * 255); // Normalizado de 0.0 a 1.0
-        // Aseguramos que no sea NaN o Infinity
-        materialRef.current.uniforms.uBass.value = isNaN(currentBass) ? 0.0 : Math.min(1.0, Math.max(0.0, currentBass));
-        
-        // Mapear 64 bandas de frecuencia a los uniforms del shader
-        const freqs = materialRef.current.uniforms.uFreqs.value as Float32Array;
-        for (let i = 0; i < 64; i++) {
-          freqs[i] = dataArray[i * 2] / 255.0; // Normalizado
-        }
-      } else {
-        // Simulación senoidal offline de alta gama si no hay música sonando
-        const t = elapsedTime * 2.0;
-        const simulatedBass = 0.15 + Math.sin(t) * 0.08 + Math.cos(t * 1.5) * 0.05;
+      }
+      
+      // Fallback de simulación senoidal fluida de respaldo si el audio no está listo o falló
+      if (!audioDataAvailable) {
+        const t = elapsedTime * 1.5;
+        const simulatedBass = 0.12 + Math.sin(t) * 0.06 + Math.cos(t * 1.3) * 0.04;
         materialRef.current.uniforms.uBass.value = simulatedBass;
         
         const freqs = materialRef.current.uniforms.uFreqs.value as Float32Array;
         for (let i = 0; i < 64; i++) {
-          freqs[i] = (0.1 + Math.sin(t + i * 0.1) * 0.08) * (1.0 - i / 64.0);
+          const val = (0.08 + Math.sin(t + i * 0.12) * 0.05) * (1.0 - i / 64.0);
+          freqs[i] = val;
         }
       }
     }
     
     // Rotación constante y suave del orbe esférico completo
     if (pointsRef.current) {
-      const speedFactor = 0.15 + (materialRef.current?.uniforms.uBass.value || 0.0) * 0.45;
+      const speedFactor = 0.12 + (materialRef.current?.uniforms.uBass.value || 0.0) * 0.35;
       pointsRef.current.rotation.y = elapsedTime * speedFactor;
-      pointsRef.current.rotation.x = Math.sin(elapsedTime * 0.1) * 0.15;
+      pointsRef.current.rotation.x = Math.sin(elapsedTime * 0.08) * 0.12;
     }
   });
 
@@ -180,16 +206,22 @@ function InteractivePoints({ analyserNode, isPlaying, bassIntensity }: HoloSpher
 // Componente principal exportable
 export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassIntensity }: HoloSphereVisualizerProps) {
   return (
-    <div className="w-full h-full relative flex items-center justify-center">
-      {/* Canvas de React Three Fiber */}
+    <div className="w-full h-full relative flex items-center justify-center bg-transparent">
+      {/* Canvas de React Three Fiber con Transparencia Estricta y Rendimiento Óptimo */}
       <Canvas
-        camera={{ position: [0, 0, 3.8], fov: 45 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        camera={{ position: [0, 0, 12], fov: 45 }} // Cámara alejada para ver la esfera en perspectiva real
+        gl={{ 
+          antialias: true, 
+          alpha: true, 
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: false,
+          premultipliedAlpha: false
+        }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
       >
         {/* Iluminación de ambiente sutil */}
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1.5} />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[10, 10, 10]} intensity={1.2} />
         
         {/* Orbe holográfico interactivo */}
         <InteractivePoints
@@ -202,18 +234,17 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         <OrbitControls
           enableZoom={false}
           enablePan={false}
-          rotateSpeed={0.6}
+          rotateSpeed={0.5}
           autoRotate={false}
         />
         
-        {/* Post-procesamiento: Efecto de Bloom (Resplandor de Neón Fotorrealista) */}
-        {/* Reducimos la intensidad del Bloom de 1.8 a 0.85 para evitar el cuadro blanco sólido (blowout) y dar un glow suave y elegante */}
-        <EffectComposer>
+        {/* Post-procesamiento: Bloom controlado para evitar sobreexposición */}
+        <EffectComposer multisampling={4}>
           <Bloom
-            intensity={0.85}          // Intensidad del brillo balanceada
-            luminanceThreshold={0.1}  // Umbral de brillo ajustado para capturar los colores de neón
-            luminanceSmoothing={0.75} // Suavizado del resplandor
-            mipmapBlur={true}         // Desenfoque mipmap de alta calidad para un glow suave
+            intensity={0.65}          // Brillo balanceado elegante
+            luminanceThreshold={0.2}  // Umbral ajustado para mantener naranja/cian definidos
+            luminanceSmoothing={0.8}  // Suavizado del resplandor
+            mipmapBlur={true}         // Glow suave fotorrealista
           />
         </EffectComposer>
       </Canvas>
