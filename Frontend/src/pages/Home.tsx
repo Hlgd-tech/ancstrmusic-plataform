@@ -1244,7 +1244,8 @@ export default function Home() {
     <div className="h-screen w-screen overflow-hidden bg-[#030508] text-slate-200 flex flex-col font-sans selection:bg-orange-500/30 selection:text-orange-400 relative">
       
       {/* 1. LIENZO GENERAL: Visualizador WebGL 3D como Fondo Interactivo Absoluto de Pantalla Completa */}
-      <div className="fixed inset-0 w-screen h-screen -z-10 pointer-events-none overflow-hidden bg-transparent">
+      {/* Usamos z-0 en lugar de -z-10 para evitar que el fondo bg-[#030508] del contenedor principal oculte el Canvas 3D */}
+      <div className="fixed inset-0 w-screen h-screen z-0 pointer-events-none overflow-hidden bg-transparent">
         <HoloSphereVisualizer 
           analyserNode={analyserRef.current}
           isPlaying={isPlaying}
@@ -1253,11 +1254,11 @@ export default function Home() {
       </div>
       
       {/* Rejilla holográfica de fondo */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,24,38,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(18,24,38,0.15)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none -z-10" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,24,38,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(18,24,38,0.15)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0 opacity-40" />
       
       {/* Orbes de iluminación dual asimétrica de fondo para potenciar el efecto Glassmorphism */}
-      <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none z-0" />
 
       {/* 2. CONTENEDOR PRINCIPAL FLOTANTE DE PANTALLA COMPLETA */}
       <div className="relative z-10 flex flex-col h-full w-full justify-between p-6">
