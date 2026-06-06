@@ -208,39 +208,42 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
   });
 
   return (
-    <group ref={groupRef}>
-      {/* Particle sphere */}
-      <points ref={pointsRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-          <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          vertexColors
-          size={0.025}
-          transparent
-          opacity={0.5}
-          sizeAttenuation
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
+    <group>
+      {/* Grupo de la Esfera y Anillo de Barras (Escalable y Reactivo) */}
+      <group ref={groupRef}>
+        {/* Particle sphere */}
+        <points ref={pointsRef}>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+            <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+          </bufferGeometry>
+          <pointsMaterial
+            vertexColors
+            size={0.025}
+            transparent
+            opacity={0.5}
+            sizeAttenuation
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </points>
 
-      {/* Waveform bar ring (sin vertexColors y con toneMapped={false} para Bloom emisivo puro) */}
-      <instancedMesh ref={barsRef} args={[undefined, undefined, BAR_COUNT]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial
-          transparent
-          opacity={1}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </instancedMesh>
+        {/* Waveform bar ring (sin vertexColors y con toneMapped={false} para Bloom emisivo puro) */}
+        <instancedMesh ref={barsRef} args={[undefined, undefined, BAR_COUNT]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial
+            transparent
+            opacity={1}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </instancedMesh>
+      </group>
 
-      {/* Holographic ground rings - Reubicados para evitar colisión y expandidos en radio */}
-      <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -2.0, 0]}>
-        <torusGeometry args={[2.2, 0.015, 16, 128]} />
+      {/* Holographic ground rings - Estáticos, reubicados y expandidos para evitar colisiones */}
+      <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -2.8, 0]}>
+        <torusGeometry args={[3.0, 0.007, 8, 128]} />
         <meshStandardMaterial
           color="#00eeff"
           emissive="#0088ff"
@@ -253,8 +256,8 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -2.15, 0]}>
-        <torusGeometry args={[2.6, 0.012, 16, 128]} />
+      <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -3.0, 0]}>
+        <torusGeometry args={[3.5, 0.005, 8, 128]} />
         <meshStandardMaterial
           color="#ff5500"
           emissive="#ff2200"
@@ -267,8 +270,8 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -2.3, 0]}>
-        <torusGeometry args={[3.0, 0.008, 16, 128]} />
+      <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -3.2, 0]}>
+        <torusGeometry args={[4.0, 0.003, 8, 128]} />
         <meshStandardMaterial
           color="#00eeff"
           emissive="#0088ff"
@@ -282,10 +285,10 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
         />
       </mesh>
 
-      {/* Subtle ambient fill from below */}
-      <pointLight position={[0, -2.5, 0]} color="#ff4400" intensity={0.4} distance={5} />
-      <pointLight position={[-3, 0, 0]} color="#00f0ff" intensity={0.3} distance={6} />
-      <pointLight position={[3, 0, 0]} color="#ff6600" intensity={0.3} distance={6} />
+      {/* Subtle ambient fill from below (Estático, fuera del grupo escalable) */}
+      <pointLight position={[0, -3.5, 0]} color="#ff4400" intensity={0.4} distance={5} />
+      <pointLight position={[-4, 0, 0]} color="#00f0ff" intensity={0.3} distance={6} />
+      <pointLight position={[4, 0, 0]} color="#ff6600" intensity={0.3} distance={6} />
     </group>
   );
 }
