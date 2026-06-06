@@ -43,6 +43,30 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const instanceColor = useMemo(() => new THREE.Color(), []);
 
+  // ── Gravity Floating Particles (Anillos -> Esfera) ───────────────
+  const GRAVITY_PARTICLE_COUNT = 150;
+  const gravityParticlesRef = useRef<THREE.Points>(null);
+  
+  // Datos iniciales de las partículas de gravedad
+  const [gravityPositions, gravityData] = useMemo(() => {
+    const pos = new Float32Array(GRAVITY_PARTICLE_COUNT * 3);
+    const data = new Float32Array(GRAVITY_PARTICLE_COUNT * 3); // [velocidad_base, fase, radio_orbita]
+    
+    for (let i = 0; i < GRAVITY_PARTICLE_COUNT; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 1.2 + Math.random() * 2.2; // Distribuidas entre el radio de la esfera y el borde de los anillos
+      
+      pos[i * 3] = Math.cos(angle) * r;
+      pos[i * 3 + 1] = -2.8 + Math.random() * 2.5; // Alturas iniciales escalonadas
+      pos[i * 3 + 2] = Math.sin(angle) * r;
+      
+      data[i * 3] = 0.15 + Math.random() * 0.35; // Velocidad base de ascenso
+      data[i * 3 + 1] = Math.random() * Math.PI * 2; // Fase de oscilación horizontal
+      data[i * 3 + 2] = r; // Guardar radio para órbita
+    }
+    return [pos, data];
+  }, []);
+
   // ── Fibonacci sphere particles ──────────────────────────────────
   const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(PARTICLE_COUNT * 3);
@@ -201,10 +225,40 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
       const scl = 1 + pulse * 0.015 * energy + (playing ? bass * 0.04 : 0);
       ref.current.scale.set(scl, scl, scl);
 
-      // Rotación continua lenta en direcciones opuestas para efecto de maquinaria futurista
+      // Rotación continua lenta en direcciones opuestas para efecto de maquinaria futurista (Eje Z e Y)
       const dir = i % 2 === 0 ? 1 : -1;
-      ref.current.rotation.z += delta * 0.15 * dir;
+      ref.current.rotation.z += delta * 0.18 * dir;
+      ref.current.rotation.y += delta * 0.08 * -dir;
     });
+
+    // Animar Partículas de Gravedad (Flujo ascendente reactivo al Bass)
+    if (gravityParticlesRef.current) {
+      const geo = gravityParticlesRef.current.geometry;
+      const posArr = geo.attributes.position.array as Float32Array;
+      
+      // Velocidad de ascenso influenciada drásticamente por el Bass
+      const speedMultiplier = 1.0 + (playing ? bassEnergy * 4.5 : 0);
+      
+      for (let i = 0; i < GRAVITY_PARTICLE_COUNT; i++) {
+        const baseSpeed = gravityData[i * 3];
+        const phase = gravityData[i * 3 + 1];
+        const r = gravityData[i * 3 + 2];
+        
+        // Ascender en el eje Y
+        posArr[i * 3 + 1] += delta * baseSpeed * speedMultiplier;
+        
+        // Sutil oscilación horizontal helicoidal (órbita lenta)
+        const angle = t * 0.25 + phase;
+        posArr[i * 3] = Math.cos(angle) * r;
+        posArr[i * 3 + 2] = Math.sin(angle) * r;
+        
+        // Si la partícula pasa el centro de la esfera, se absorbe y renace abajo
+        if (posArr[i * 3 + 1] > 1.2) {
+          posArr[i * 3 + 1] = -2.8 - Math.random() * 0.4; // Renace debajo de los anillos
+        }
+      }
+      geo.attributes.position.needsUpdate = true;
+    }
   });
 
   return (
@@ -284,6 +338,36 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
           blending={THREE.AdditiveBlending}
         />
       </mesh>
+
+      {/* Cono de Luz Proyector Invertido (Luz translúcida aditiva desde el suelo) */}
+      <mesh position={[0, -1.0, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[3.2, 3.8, 32, 1, true]} />
+        <meshBasicMaterial
+          color="#00aaff"
+          transparent
+          opacity={0.05 + (energyRef.current * 0.08)} // Pulsación sutil de luz con el ritmo
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Sistema de Partículas de Gravedad (Flujo ascendente de datos) */}
+      <points ref={gravityParticlesRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[gravityPositions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial
+          color="#00eeff"
+          size={0.018}
+          transparent
+          opacity={0.4 + (energyRef.current * 0.4)} // Brillar más con la energía del audio
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          sizeAttenuation
+        />
+      </points>
 
       {/* Subtle ambient fill from below (Estático, fuera del grupo escalable) */}
       <pointLight position={[0, -3.5, 0]} color="#ff4400" intensity={0.4} distance={5} />
