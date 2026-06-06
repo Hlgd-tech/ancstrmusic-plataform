@@ -393,7 +393,7 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
       >
-        <color attach="background" args={["transparent"]} />
+        {/* Eliminamos <color attach="background" /> para permitir transparencia nativa real y evitar que Three.js falle a fondo blanco */}
         
         {/* Escena interactiva */}
         <InteractiveHoloScene 
