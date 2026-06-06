@@ -25,9 +25,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
   const groupRef = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const barsRef = useRef<THREE.InstancedMesh>(null);
-  const ring1Ref = useRef<THREE.Mesh>(null);
-  const ring2Ref = useRef<THREE.Mesh>(null);
-  const ring3Ref = useRef<THREE.Mesh>(null);
+  const standbyMeshRef = useRef<THREE.Mesh>(null);
 
   // Buffer de datos de frecuencia para el analizador de audio
   const dataArrayRef = useRef<Uint8Array | null>(null);
@@ -42,30 +40,6 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const instanceColor = useMemo(() => new THREE.Color(), []);
-
-  // ── Gravity Floating Particles (Anillos -> Esfera) ───────────────
-  const GRAVITY_PARTICLE_COUNT = 150;
-  const gravityParticlesRef = useRef<THREE.Points>(null);
-  
-  // Datos iniciales de las partículas de gravedad
-  const [gravityPositions, gravityData] = useMemo(() => {
-    const pos = new Float32Array(GRAVITY_PARTICLE_COUNT * 3);
-    const data = new Float32Array(GRAVITY_PARTICLE_COUNT * 3); // [velocidad_base, fase, radio_orbita]
-    
-    for (let i = 0; i < GRAVITY_PARTICLE_COUNT; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const r = 1.2 + Math.random() * 2.2; // Distribuidas entre el radio de la esfera y el borde de los anillos
-      
-      pos[i * 3] = Math.cos(angle) * r;
-      pos[i * 3 + 1] = -2.8 + Math.random() * 2.5; // Alturas iniciales escalonadas
-      pos[i * 3 + 2] = Math.sin(angle) * r;
-      
-      data[i * 3] = 0.15 + Math.random() * 0.35; // Velocidad base de ascenso
-      data[i * 3 + 1] = Math.random() * Math.PI * 2; // Fase de oscilación horizontal
-      data[i * 3 + 2] = r; // Guardar radio para órbita
-    }
-    return [pos, data];
-  }, []);
 
   // ── Fibonacci sphere particles ──────────────────────────────────
   const [positions, colors] = useMemo(() => {
@@ -119,7 +93,22 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
     const playing = isPlayingRef.current;
     const prog = progressRef.current;
 
-    // Recuperar el AnalyserNode de la prop o el global como fallback
+    // --- ANIMACIÓN ESTADO STANDBY (Pausado) ---
+    if (!playing) {
+      if (standbyMeshRef.current) {
+        // Rotación elegante sobre múltiples ejes para dar sensación de órbita holográfica
+        standbyMeshRef.current.rotation.y += delta * 0.25;
+        standbyMeshRef.current.rotation.x += delta * 0.15;
+        standbyMeshRef.current.rotation.z += delta * 0.1;
+        
+        // Sutil pulsación de escala respiratoria (breathing effect)
+        const breathe = 1.0 + Math.sin(t * 1.5) * 0.05;
+        standbyMeshRef.current.scale.set(breathe, breathe, breathe);
+      }
+      return; // Detener animación de partículas y barras si no está reproduciendo
+    }
+
+    // --- ANIMACIÓN ESTADO PLAYING (Activo) ---
     const analyser = analyserNode || (window as any).__AUDIO_ANALYSER__;
     let bass = 0;
     let mid = 0;
@@ -152,7 +141,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
     energyRef.current = THREE.MathUtils.lerp(
       energyRef.current,
       targetEnergy,
-      delta * 12.0 // Mayor velocidad de interpolación para golpes rápidos de bombo
+      delta * 12.0
     );
     const energy = energyRef.current;
 
@@ -160,7 +149,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
     bassEnergyRef.current = THREE.MathUtils.lerp(
       bassEnergyRef.current,
       playing ? bass : 0,
-      delta * 15.0 // Súper rápido para el "estallido" físico instantáneo
+      delta * 15.0
     );
     const bassEnergy = bassEnergyRef.current;
 
@@ -195,7 +184,6 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
         const nearBoost = Math.max(0, 1 - distFromHead / 6);
         const wavePhase = prog * Math.PI * 24;
         const wave = (Math.sin(t * 5 + i * 0.55 + wavePhase) * 0.5 + 0.5);
-        // Usamos el multiplicador de energía de bajos para alterar drásticamente la altura de las barras
         const bassBoost = playing ? bassEnergy * 1.8 : 0.05;
         const h = Math.max(0.008, (BAR_ENVELOPE[i] + wave * 0.35 + nearBoost * 0.5) * (energy * 0.4 + bassBoost) * 1.1);
 
@@ -210,169 +198,64 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
       barsRef.current.instanceMatrix.needsUpdate = true;
       if (barsRef.current.instanceColor) barsRef.current.instanceColor.needsUpdate = true;
     }
-
-    // Animate holo rings (reubicados y girando lentamente en direcciones opuestas)
-    const ringRefs = [ring1Ref, ring2Ref, ring3Ref];
-    ringRefs.forEach((ref, i) => {
-      if (!ref.current) return;
-      const mat = ref.current.material as THREE.MeshStandardMaterial;
-      const pulse = Math.sin(t * 0.8 + i * 1.4) * 0.5 + 0.5;
-      // Opacidad reactiva al volumen y graves
-      mat.opacity = (0.22 + energy * 0.48) * (1 - i * 0.08) * (0.7 + pulse * 0.3);
-      // Brillo emisivo reactivo en tiempo real al bombo/graves (Bass)
-      mat.emissiveIntensity = (2.0 + (playing ? bass * 4.5 : 0)) * (1 - i * 0.15);
-      // Escala reactiva al ritmo
-      const scl = 1 + pulse * 0.015 * energy + (playing ? bass * 0.04 : 0);
-      ref.current.scale.set(scl, scl, scl);
-
-      // Rotación continua lenta en direcciones opuestas para efecto de maquinaria futurista (Eje Z e Y)
-      const dir = i % 2 === 0 ? 1 : -1;
-      ref.current.rotation.z += delta * 0.18 * dir;
-      ref.current.rotation.y += delta * 0.08 * -dir;
-    });
-
-    // Animar Partículas de Gravedad (Flujo ascendente reactivo al Bass)
-    if (gravityParticlesRef.current) {
-      const geo = gravityParticlesRef.current.geometry;
-      const posArr = geo.attributes.position.array as Float32Array;
-      
-      // Velocidad de ascenso influenciada drásticamente por el Bass
-      const speedMultiplier = 1.0 + (playing ? bassEnergy * 4.5 : 0);
-      
-      for (let i = 0; i < GRAVITY_PARTICLE_COUNT; i++) {
-        const baseSpeed = gravityData[i * 3];
-        const phase = gravityData[i * 3 + 1];
-        const r = gravityData[i * 3 + 2];
-        
-        // Ascender en el eje Y
-        posArr[i * 3 + 1] += delta * baseSpeed * speedMultiplier;
-        
-        // Sutil oscilación horizontal helicoidal (órbita lenta)
-        const angle = t * 0.25 + phase;
-        posArr[i * 3] = Math.cos(angle) * r;
-        posArr[i * 3 + 2] = Math.sin(angle) * r;
-        
-        // Si la partícula pasa el centro de la esfera, se absorbe y renace abajo
-        if (posArr[i * 3 + 1] > 1.2) {
-          posArr[i * 3 + 1] = -2.8 - Math.random() * 0.4; // Renace debajo de los anillos
-        }
-      }
-      geo.attributes.position.needsUpdate = true;
-    }
   });
 
   return (
     <group>
-      {/* Grupo de la Esfera y Anillo de Barras (Escalable y Reactivo) */}
-      <group ref={groupRef}>
-        {/* Particle sphere */}
-        <points ref={pointsRef}>
-          <bufferGeometry>
-            <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-            <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-          </bufferGeometry>
-          <pointsMaterial
-            vertexColors
-            size={0.025}
-            transparent
-            opacity={0.5}
-            sizeAttenuation
+      {/* ESTADO STANDBY: Icosaedro de alambre holográfico cian rotando en el vacío */}
+      {!isPlaying && (
+        <mesh ref={standbyMeshRef} position={[0, 0, 0]}>
+          <icosahedronGeometry args={[2.0, 1]} />
+          <meshStandardMaterial
+            wireframe={true}
+            color="#00eeff"
+            emissive="#00eeff"
+            emissiveIntensity={2.2}
+            transparent={true}
+            opacity={0.8}
             depthWrite={false}
             blending={THREE.AdditiveBlending}
           />
-        </points>
+        </mesh>
+      )}
 
-        {/* Waveform bar ring (sin vertexColors y con toneMapped={false} para Bloom emisivo puro) */}
-        <instancedMesh ref={barsRef} args={[undefined, undefined, BAR_COUNT]}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshBasicMaterial
-            transparent
-            opacity={1}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-            toneMapped={false}
-          />
-        </instancedMesh>
-      </group>
+      {/* ESTADO PLAYING: Esfera de partículas reactivas original con anillo de barras de onda */}
+      {isPlaying && (
+        <group ref={groupRef}>
+          {/* Particle sphere */}
+          <points ref={pointsRef}>
+            <bufferGeometry>
+              <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+              <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+            </bufferGeometry>
+            <pointsMaterial
+              vertexColors
+              size={0.025}
+              transparent
+              opacity={0.5}
+              sizeAttenuation
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </points>
 
-      {/* Holographic ground rings - Estáticos, reubicados y expandidos para evitar colisiones */}
-      <mesh ref={ring1Ref} rotation-x={Math.PI / 2} position={[0, -2.8, 0]}>
-        <torusGeometry args={[3.0, 0.007, 8, 128]} />
-        <meshStandardMaterial
-          color="#00eeff"
-          emissive="#0088ff"
-          emissiveIntensity={2.5}
-          roughness={0}
-          metalness={1}
-          transparent
-          opacity={0.6}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-      <mesh ref={ring2Ref} rotation-x={Math.PI / 2} position={[0, -3.0, 0]}>
-        <torusGeometry args={[3.5, 0.005, 8, 128]} />
-        <meshStandardMaterial
-          color="#ff5500"
-          emissive="#ff2200"
-          emissiveIntensity={2.5}
-          roughness={0}
-          metalness={1}
-          transparent
-          opacity={0.5}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-      <mesh ref={ring3Ref} rotation-x={Math.PI / 2} position={[0, -3.2, 0]}>
-        <torusGeometry args={[4.0, 0.003, 8, 128]} />
-        <meshStandardMaterial
-          color="#00eeff"
-          emissive="#0088ff"
-          emissiveIntensity={2.0}
-          roughness={0}
-          metalness={1}
-          transparent
-          opacity={0.4}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+          {/* Waveform bar ring */}
+          <instancedMesh ref={barsRef} args={[undefined, undefined, BAR_COUNT]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial
+              transparent
+              opacity={1}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </instancedMesh>
+        </group>
+      )}
 
-      {/* Cono de Luz Proyector Invertido (Luz translúcida aditiva desde el suelo) */}
-      <mesh position={[0, -1.0, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[3.2, 3.8, 32, 1, true]} />
-        <meshBasicMaterial
-          color="#00aaff"
-          transparent
-          opacity={0.05 + (energyRef.current * 0.08)} // Pulsación sutil de luz con el ritmo
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
-      </mesh>
-
-      {/* Sistema de Partículas de Gravedad (Flujo ascendente de datos) */}
-      <points ref={gravityParticlesRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[gravityPositions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          color="#00eeff"
-          size={0.018}
-          transparent
-          opacity={0.4 + (energyRef.current * 0.4)} // Brillar más con la energía del audio
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          sizeAttenuation
-        />
-      </points>
-
-      {/* Subtle ambient fill from below (Estático, fuera del grupo escalable) */}
-      <pointLight position={[0, -3.5, 0]} color="#ff4400" intensity={0.4} distance={5} />
-      <pointLight position={[-4, 0, 0]} color="#00f0ff" intensity={0.3} distance={6} />
-      <pointLight position={[4, 0, 0]} color="#ff6600" intensity={0.3} distance={6} />
+      {/* Luces sutiles ambientales de fondo */}
+      <pointLight position={[0, 3, 0]} color="#00f0ff" intensity={0.4} distance={6} />
+      <pointLight position={[0, -3, 0]} color="#ff4400" intensity={0.3} distance={6} />
     </group>
   );
 }
