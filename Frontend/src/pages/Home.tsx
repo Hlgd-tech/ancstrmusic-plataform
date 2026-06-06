@@ -1856,9 +1856,17 @@ export default function Home() {
                     key={idx}
                     className="bg-[#0a0f16]/40 border border-white/5 hover:border-orange-500/30 rounded-xl p-2.5 flex flex-col gap-2 group transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,100,0,0.08)] cursor-pointer"
                   >
-                    <div className="aspect-square rounded-lg overflow-hidden bg-black/40 border border-white/5 relative">
-                      <img src={album.img} alt={album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="aspect-square rounded-md overflow-hidden bg-black/60 border border-cyan-500/20 relative">
+                      {/* Portadas Holográficas con CSS Avanzado (Efecto de Luz Proyectada Monocromática Teñida) */}
+                      <img 
+                        src={album.img} 
+                        alt={album.title} 
+                        className="w-full h-full object-cover opacity-75 contrast-125 saturate-50 mix-blend-luminosity group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      {/* Degradado de inyección de color holográfico por encima de la imagen */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-orange-500/20 mix-blend-overlay pointer-events-none"></div>
+                      
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <Play className="w-5 h-5 text-orange-400 fill-orange-400/20" />
                       </div>
                     </div>

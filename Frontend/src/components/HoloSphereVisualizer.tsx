@@ -71,26 +71,27 @@ const particleFragmentShader = `
     if (dist > 0.5) discard;
     float alpha = smoothstep(0.5, 0.1, dist) * (0.65 + uBass * 0.35);
     
-    // ILUMINACIÓN DUAL ASIMÉTRICA CON MIX() GLSL (Saturación Eléctrica Premium)
-    // Lado izquierdo (x < 0) -> Azul Espacial Profundo y Eléctrico (#0044ff)
-    // Lado derecho (x > 0) -> Naranja Magma Intenso y Vibrante (#ff2200)
-    vec3 leftColor = vec3(0.0, 0.27, 1.0);  // #0044ff (Azul Eléctrico)
-    vec3 rightColor = vec3(1.0, 0.13, 0.0); // #ff2200 (Naranja Magma)
+    // ILUMINACIÓN DUAL ASIMÉTRICA CON MIX() GLSL (Tonos Profundos "Dark/Holo" Absolutos)
+    // Lado izquierdo (x < 0) -> Azul Espacial Profundo y Denso (#002288)
+    // Lado derecho (x > 0) -> Naranja Magma Quemado y Oscuro (#aa2200)
+    vec3 leftColor = vec3(0.0, 0.13, 0.53);  // #002288 (Azul Espacial Profundo)
+    vec3 rightColor = vec3(0.67, 0.13, 0.0); // #aa2200 (Naranja Magma Quemado)
     
     // Mezcla fluida en el eje X basada en la posición local de la partícula
     float mixFactor = smoothstep(-0.8, 0.8, vPosition.x);
     vec3 baseColor = mix(leftColor, rightColor, mixFactor);
     
-    // OSCURECER EL NÚCLEO: Calcular la distancia radial de la partícula al centro de la esfera
-    // El radio máximo de generación es aprox 1.6. Atenuamos fuertemente el núcleo (r < 0.6)
+    // AHUECAR EL NÚCLEO: Desvanecimiento extremo en el centro de la esfera (r < 0.3)
+    // El radio máximo de generación es aprox 1.6. El centro debe ser prácticamente vacío (opacidad 0.05)
     float radialDist = length(vPosition);
-    float coreAttenuation = smoothstep(0.1, 0.7, radialDist); // 0 en el centro, 1 en el borde exterior
+    float coreAttenuation = smoothstep(0.3, 0.9, radialDist); // Prácticamente 0 en el centro, 1 en la corteza exterior
+    coreAttenuation = max(0.05, coreAttenuation); // Forzamos un mínimo de 0.05 para que no colapse
     
-    // Añadir brillo de alta emisión modulado por la elevación del ruido, bajos y atenuación del núcleo
-    vec3 glowColor = baseColor * (0.8 + vElevation * 2.5 + uBass * 1.2) * coreAttenuation;
+    // Añadir brillo de emisión sutil modulado por la elevación del ruido, bajos y la atenuación del núcleo
+    vec3 glowColor = baseColor * (0.6 + vElevation * 1.8 + uBass * 0.8) * coreAttenuation;
     
-    // Reducir también la opacidad en el núcleo para un efecto de profundidad "hueco" y misterioso
-    float finalAlpha = alpha * 0.75 * coreAttenuation;
+    // Reducir la opacidad drásticamente en el núcleo para un efecto de profundidad "hueco" absoluto
+    float finalAlpha = alpha * 0.65 * coreAttenuation;
     
     gl_FragColor = vec4(glowColor, finalAlpha);
   }
@@ -362,18 +363,18 @@ function InteractiveHoloScene({ analyserNode, isPlaying }: HoloSphereVisualizerP
         <mesh ref={ring1Ref}>
           <torusGeometry args={[1.5, 0.03, 8, 64]} />
           <meshBasicMaterial 
-            color="#ff5500" 
+            color="#aa2200" // Naranja Magma Quemado
             transparent={true} 
-            opacity={0.4} 
+            opacity={0.3} 
             blending={THREE.AdditiveBlending}
           />
         </mesh>
         <mesh ref={ring2Ref}>
           <torusGeometry args={[1.2, 0.02, 8, 64]} />
           <meshBasicMaterial 
-            color="#00f0ff" 
+            color="#002288" // Azul Espacial Profundo
             transparent={true} 
-            opacity={0.3} 
+            opacity={0.25} 
             blending={THREE.AdditiveBlending}
           />
         </mesh>
@@ -413,9 +414,9 @@ export default function HoloSphereVisualizer({ analyserNode, isPlaying, bassInte
         {/* Post-procesamiento con Bloom fotorrealista de neón y grano analógico */}
         <EffectComposer>
           <Bloom 
-            mipmapBlur={true}
-            intensity={0.75} 
-            luminanceThreshold={0.35} // Incrementamos el umbral para evitar que el brillo aditivo se queme a blanco puro
+            mipmapBlur 
+            intensity={0.45} // Reducimos la intensidad general para que predomine el negro espacial (#030508)
+            luminanceThreshold={0.35} // Umbral alto para evitar quemar los colores a blanco puro
             luminanceSmoothing={0.85} 
           />
           <Noise 
