@@ -1,9 +1,12 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import LeftSidebar from './components/LeftSidebar';
-import NowPlayingStage from './components/NowPlayingStage';
-import RightPanel from './components/RightPanel';
+import LeftSidebar from './components/new-ui/Sidebar';
+import RightPanel from './components/new-ui/RightPanel';
+import TopBar from './components/new-ui/TopBar';
+import AICore from './components/new-ui/AICore';
+import PlayerControls from './components/new-ui/PlayerControls';
+import BottomTabBar from './components/new-ui/BottomTabBar';
 import BottomSheet from './components/BottomSheet';
 import WalletWidget from './components/WalletWidget';
 import UploadSection from './components/UploadSection';
@@ -298,7 +301,7 @@ function MainApp() {
   }, [disconnect]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#030508] text-white">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#030508] text-white font-['Inter'] relative">
       {/* Elemento de audio real oculto */}
       <audio
         ref={audioRef}
@@ -309,65 +312,136 @@ function MainApp() {
         crossOrigin="anonymous"
       />
 
-      {/* Left Sidebar */}
+      {/* Subtle background grid */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(0,238,255,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,238,255,0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }}
+      />
+
+      {/* Ambient glow blobs */}
+      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse, rgba(0,238,255,0.025) 0%, transparent 70%)' }}
+      />
+      <div className="fixed bottom-0 left-1/4 w-[300px] h-[300px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse, rgba(255,85,0,0.03) 0%, transparent 70%)' }}
+      />
+
+      {/* LEFT — Sidebar */}
       <LeftSidebar
         wallet={wallet}
         activeNav={activeNav}
         onNavChange={setActiveNav}
         onWalletClick={() => setWalletOpen(!walletOpen)}
       />
-      {/* Center Stage */}
-      <main className="flex-1 relative min-w-0">
-        {activeNav === 'discover' || activeNav === 'era' ? (
-          <NowPlayingStage
-            player={player}
-            onPlayPause={handlePlayPause}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onSeek={handleSeek}
-            onVolume={handleVolume}
-            onShuffle={handleShuffle}
-            onRepeat={handleRepeat}
-            onMenuOpen={() => setMobileMenuOpen(true)}
-            defaultTrack={DEFAULT_TRACK}
-            analyserNode={analyserRef.current}
-          />
-        ) : activeNav === 'upload' ? (
-          <UploadSection
-            walletConnected={wallet.connected}
-            onUploadSuccess={(newTrack) => {
-              TRACKS.unshift(newTrack);
-              setPlayer(prev => ({ ...prev, track: newTrack, isPlaying: true, progress: 0 }));
-              toast.success(`¡"${newTrack.title}" registrada con éxito!`);
-            }}
-          />
-        ) : activeNav === 'library' ? (
-          <LibrarySection
-            onPlayTrack={(track) => {
-              setPlayer(prev => ({ ...prev, track, isPlaying: true, progress: 0 }));
-            }}
-            currentTrackId={player.track?.id}
-          />
-        ) : activeNav === 'stake' ? (
-          <StakeSection
-            walletConnected={wallet.connected}
-            ancBalance={wallet.ancBalance}
-          />
-        ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-[#030508] font-mono text-[10px] text-white/20 uppercase tracking-[0.2em] gap-3">
-            <Settings className="w-8 h-8 animate-spin-slow stroke-[1]" />
-            <span>Próximamente: {activeNav}</span>
+
+      {/* CENTER — Main content */}
+      <main className="flex-1 flex flex-col h-full min-w-0 relative">
+        {/* Top bar */}
+        <TopBar wallet={wallet} onWalletClick={() => setWalletOpen(!walletOpen)} />
+
+        {/* Interior Views and AI Core Area */}
+        <div className="flex-1 relative flex flex-col overflow-hidden">
+          
+          {/* Status chip — only shown when in Discover view */}
+          {activeNav === 'discover' && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.01] backdrop-blur-xl">
+              <span className="text-[9px] text-white/25 tracking-[0.3em] uppercase">
+                {player.isPlaying ? 'Processing audio stream' : 'Standby mode'}
+              </span>
+              <div className={`w-1 h-1 rounded-full transition-all duration-500 ${
+                player.isPlaying ? 'bg-[#00eeff] shadow-[0_0_4px_#00eeff] animate-shimmer' : 'bg-white/15'
+              }`} />
+            </div>
+          )}
+
+          {/* Core content routing */}
+          <div className="flex-1 relative overflow-y-auto">
+            {activeNav === 'discover' ? (
+              <div className="absolute inset-0 w-full h-full">
+                {/* 3D WebGL Canvas Sphere */}
+                <AICore
+                  isPlaying={player.isPlaying}
+                  progress={player.progress}
+                  analyserNode={analyserRef.current}
+                />
+
+                {/* Center text overlay when paused */}
+                {!player.isPlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                    <div className="text-center mt-32">
+                      <p className="text-[10px] text-white/10 tracking-[0.5em] uppercase mb-2">
+                        ancstr intelligence
+                      </p>
+                      <p className="text-[9px] text-white/[0.06] tracking-[0.3em] uppercase">
+                        Tap play to awaken
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : activeNav === 'upload' ? (
+              <div className="p-4 md:p-8 max-w-4xl mx-auto w-full h-full overflow-y-auto">
+                <UploadSection
+                  walletConnected={wallet.connected}
+                  onUploadSuccess={(newTrack) => {
+                    TRACKS.unshift(newTrack);
+                    setPlayer(prev => ({ ...prev, track: newTrack, isPlaying: true, progress: 0 }));
+                    toast.success(`¡"${newTrack.title}" registrada con éxito!`);
+                  }}
+                />
+              </div>
+            ) : activeNav === 'library' ? (
+              <div className="p-4 md:p-8 max-w-5xl mx-auto w-full h-full overflow-y-auto">
+                <LibrarySection
+                  onPlayTrack={(track) => {
+                    setPlayer(prev => ({ ...prev, track, isPlaying: true, progress: 0 }));
+                  }}
+                  currentTrackId={player.track?.id}
+                />
+              </div>
+            ) : activeNav === 'stake' ? (
+              <div className="p-4 md:p-8 max-w-4xl mx-auto w-full h-full overflow-y-auto">
+                <StakeSection
+                  walletConnected={wallet.connected}
+                  ancBalance={wallet.ancBalance}
+                />
+              </div>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center bg-[#030508] font-mono text-[10px] text-white/20 uppercase tracking-[0.2em] gap-3">
+                <Settings className="w-8 h-8 animate-spin-slow stroke-[1]" />
+                <span>Próximamente: {activeNav}</span>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Player controls — float above the bottom tab bar on mobile */}
+          <div className="relative z-10 pb-16 md:pb-0">
+            <PlayerControls
+              player={player}
+              onPlayPause={handlePlayPause}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              onSeek={handleSeek}
+              onVolume={handleVolume}
+              onShuffle={handleShuffle}
+              onRepeat={handleRepeat}
+            />
+          </div>
+        </div>
       </main>
-      {/* Right Panel */}
+
+      {/* RIGHT — Context panel */}
       <RightPanel
-        albums={ALBUMS}
         queue={QUEUE}
         currentTrack={player.track}
         isPlaying={player.isPlaying}
         onQueuePlay={handleQueuePlay}
-        earnProgress={EARN_PROGRESS}
       />
       {/* Wallet Widget overlay */}
       <AnimatePresence>
@@ -412,6 +486,9 @@ function MainApp() {
         onWalletClick={() => setWalletOpen(true)}
         onQueuePlay={handleQueuePlay}
       />
+
+      {/* MOBILE — Bottom tab bar */}
+      <BottomTabBar activeNav={activeNav} onNavChange={setActiveNav} />
     </div>
   );
 }
