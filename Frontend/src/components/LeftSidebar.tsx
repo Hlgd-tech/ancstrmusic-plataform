@@ -155,3 +155,4 @@ export default function LeftSidebar({ wallet, activeNav, onNavChange, onWalletCl
     </aside>
   );
 }
+
