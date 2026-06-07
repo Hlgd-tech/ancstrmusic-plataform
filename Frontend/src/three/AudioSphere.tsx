@@ -11,7 +11,7 @@ interface AudioSphereProps {
 // ── AUDIO-DRIVEN ICOSAHEDRON WIREFRAME ──────────────────────────────────
 // UNA sola malla persistente: Icosaedro de alambre
 // Material Base: <meshStandardMaterial wireframe={true} transparent={true} opacity={0.8} />
-// Standby (!isPlaying): Color Cian (#00eeff), rotación lenta constante.
+// Standby (!isPlaying): Color Cian (#002bb8), rotación lenta constante.
 // Playing (isPlaying): NO desaparece. Bass altera escala dinámica.
 //                      Velocidad rotación aumenta. Emissive transiciona a Naranja Magma (#ff5500) en picos.
 export default function AudioSphere({ isPlaying, progress, analyserNode }: AudioSphereProps) {
@@ -67,13 +67,13 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
         }
         // Emissive: Transición desde Cian a Naranja Magma según picos de volumen
         // Bass alto → Naranja Magma (#ff5500)
-        // Bass bajo → Cian (#00eeff)
+        // Bass bajo → Cian (#002bb8)
         const t = THREE.MathUtils.clamp(bassVal, 0, 1);
         const r = 1 - t; // Cian component
         const g = (1 - t) * 0.93 + t * 0.33;
         const b = 1 - t; // Cian component
         mat.color.setRGB(r, g, b);
-        mat.emissive.set(bassVal > 0.8 ? '#ff5500' : '#00eeff');
+        mat.emissive.set(bassVal > 0.8 ? '#ff5500' : '#002bb8');
         mat.emissiveIntensity = 2 + bassVal * 6;
       } else {
         // Standby: Sin escala, rotación lenta constante
@@ -82,7 +82,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
           icoRef.current.rotation.y += delta * 0.1;
         }
         // Color Cian constante
-        mat.color.set('#00eeff');
+        mat.color.set('#002bb8');
         mat.emissive.set('#0088ff');
         mat.emissiveIntensity = 1.5;
       }
@@ -96,7 +96,7 @@ export default function AudioSphere({ isPlaying, progress, analyserNode }: Audio
         wireframe={true}
         transparent={true}
         opacity={0.8}
-          color="#00eeff"
+          color="#002bb8"
           emissive="#0088ff"
         emissiveIntensity={1.5}
           roughness={0}
